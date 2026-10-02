@@ -1,8 +1,8 @@
 import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
+import { attractions } from '../data/attractions'
+import { routes } from '../data/routes'
 
-const attractionPlaceholders = [1, 2, 3, 4]
-const routePlaceholders = [1, 2, 3]
 
 function LeafIcon() {
   return (
@@ -174,18 +174,22 @@ function Home() {
           <p className="section-ornament" aria-hidden="true" />
           <p className="section-lead">Descripción placeholder de esta sección.</p>
           <div className="card-grid">
-            {attractionPlaceholders.map((item) => (
-              <article className="content-card ticket-card" key={item}>
+            {attractions.map((attraction) => (
+              <article className="content-card ticket-card" key={attraction.id}>
                 <div
                   className="media-placeholder card-media"
                   role="img"
-                  aria-label={`Espacio reservado para la imagen del atractivo ${item}`}
+                  aria-label={`Imagen de ${attraction.name}`}
                 >
-                  <span>Imagen</span>
+                  {attraction.image ? (
+                    <img src={attraction.image} alt={attraction.name} />
+                  ) : (
+                    <span>Imagen</span>
+                  )}
                 </div>
                 <div className="card-body">
-                  <h3>Nombre del atractivo</h3>
-                  <p>Descripción breve pendiente.</p>
+                  <h3>{attraction.name}</h3>
+                  <p>{attraction.description}</p>
                   <Link className="btn btn-text" to="/attractions">
                     Consultar detalle
                   </Link>
@@ -237,20 +241,22 @@ function Home() {
           <p className="section-ornament" aria-hidden="true" />
           <p className="section-lead">Descripción placeholder de esta sección.</p>
           <div className="card-grid routes-grid">
-            {routePlaceholders.map((item) => (
-              <article className="content-card route-card" key={item}>
+            {routes.map((route) => (
+              <article className="content-card route-card" key={route.id}>
                 <div
                   className="media-placeholder card-media earth-media"
                   role="img"
-                  aria-label={`Espacio reservado para la imagen de la ruta ${item}`}
+                  aria-label={`Espacio reservado para la imagen de la ruta ${route.name}`}
                 >
                   <RouteSketch />
                   <span>Imagen</span>
                 </div>
                 <div className="card-body">
-                  <h3>Ruta {item}</h3>
-                  <p>Descripción pendiente.</p>
-                  <p className="card-meta">Información resumida pendiente</p>
+                  <h3>Ruta {route.name}</h3>
+                  <p>Ruta turistica autoguiada de Casablanca</p>
+                  <p className="card-meta">
+                    {route.attractionIds.length} atractivos
+                  </p>
                   <Link className="btn btn-text" to="/routes">
                     Explorar la ruta
                   </Link>
