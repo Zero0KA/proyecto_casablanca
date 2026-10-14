@@ -1,4 +1,6 @@
 {
-  "activo": false,
-  "api_url": null
+  "activo": true,
+  "api_url": "https://commerce-laser-frequent-chairman.trycloudflare.com/api",
+  "publicacion_id": "87048518-6b6f-454b-a777-a29c997b57f3",
+  "actualizado_en": "2026-10-14T22:47:08.430Z"
 }
