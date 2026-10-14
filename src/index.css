@@ -2,8 +2,7 @@
   font-family: 'Le Bistrot des Amoureux';
   src:
     local('Le Bistrot des Amoureux'),
-    local('LeBistrotDesAmoureux'),
-    url('/fonts/LeBistrotDesAmoureux.woff2') format('woff2');
+    local('LeBistrotDesAmoureux');
   font-weight: normal;
   font-style: normal;
   font-display: swap;

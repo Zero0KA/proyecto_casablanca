@@ -1,0 +1,14 @@
+.registro-panel { max-width: 660px; margin: 32px auto; padding: 28px; background: #fff; color: #24352e; border: 1px solid #d5ded9; border-radius: 14px; }
+.registro-panel a { color: #245c45; }
+.registro-panel h1 { margin: 18px 0 8px; }
+.registro-panel fieldset { border: 0; padding: 0; margin: 0; display: grid; gap: 15px; min-width: 0; }
+.registro-panel label { display: grid; gap: 6px; font-weight: 600; }
+.registro-panel input, .registro-panel select { box-sizing: border-box; width: 100%; min-width: 0; padding: 11px; border: 1px solid #929f98; border-radius: 6px; font: inherit; background: #fff; color: #24352e; }
+.registro-panel :is(input, select, button, a):focus-visible { outline: 3px solid #287f9a; outline-offset: 3px; }
+.registro-panel button { padding: 12px 18px; border: 0; border-radius: 6px; background: #245c45; color: #fff; font: inherit; cursor: pointer; }
+.registro-panel :disabled { opacity: .65; cursor: not-allowed; }
+.registro-fila { display: grid; grid-template-columns: 1fr 2fr; gap: 15px; }
+.registro-nota { color: #526359; font-size: .95rem; }
+.registro-error { background: #fff0ef; color: #8e201a; padding: 12px; border-radius: 6px; }
+.registro-exito { background: #e9f5ed; color: #1e5131; padding: 12px; border-radius: 6px; }
+@media (max-width: 600px) { .registro-panel { margin: 16px 12px; padding: 20px; } .registro-fila { grid-template-columns: 1fr; } }

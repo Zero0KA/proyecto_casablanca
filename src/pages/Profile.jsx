@@ -1,10 +1,17 @@
-function Profile() {
-  return (
-    <section className="page">
-      <h1>Perfil</h1>
-      <p>El perfil del visitante se definirá en un paso posterior.</p>
-    </section>
-  )
+import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
+import { apiFetch, useSession } from '../components/SessionContext'
+const generos={masculino:'Masculino',femenino:'Femenino',no_binario:'No binario',otra_identidad:'Otra identidad',prefiero_no_responder:'Prefiero no responder'}
+export default function Profile(){
+  const {usuario}=useSession();const [perfil,setPerfil]=useState(null),[recorridos,setRecorridos]=useState([]),[error,setError]=useState(''),[cargando,setCargando]=useState(true),[revision,setRevision]=useState(0),[pagina,setPagina]=useState(1),[ocupado,setOcupado]=useState(false)
+  useEffect(()=>{const controller=new AbortController();async function cargar(){setCargando(true);setError('');try{const [p,r]=await Promise.all([apiFetch('/perfil',{signal:controller.signal}),apiFetch(`/recorridos?pagina=${pagina}`,{signal:controller.signal})]);setPerfil(p);setRecorridos(r)}catch(fallo){if(fallo.name!=='AbortError')setError(fallo.message)}finally{if(!controller.signal.aborted)setCargando(false)}}cargar();return()=>controller.abort()},[revision,pagina,usuario.usuario_id])
+  async function abandonar(id){if(!window.confirm('¿Abandonar este recorrido? Se conservará en tu historial.'))return;setOcupado(true);try{await apiFetch(`/recorridos/${id}/abandonar`,{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});setRevision(v=>v+1)}catch(fallo){setError(fallo.message)}finally{setOcupado(false)}}
+  return <section className="page"><header className="page-heading"><p className="page-eyebrow">Tu espacio en Casablanca</p><h1>Hola, {usuario.nombre}</h1><p className="page-intro">{usuario.administrador?'Cuenta administradora':'Cuenta turista'}</p></header>
+    {error&&<p className="cuenta-error" role="alert">{error} <button type="button" onClick={()=>setRevision(v=>v+1)}>Reintentar</button></p>}{cargando&&<p role="status">Cargando tu información…</p>}
+    {perfil&&<article className="content-card"><div className="card-body"><h2>Datos de tu cuenta</h2><dl className="profile-data"><dt>Correo</dt><dd>{perfil.email}</dd><dt>Edad declarada</dt><dd>{perfil.edad_declarada}</dd><dt>Nacionalidad</dt><dd>{perfil.nacionalidad_codigo}</dd><dt>Género</dt><dd>{generos[perfil.genero_codigo]||perfil.genero_codigo}{perfil.genero_detalle&&` · ${perfil.genero_detalle}`}</dd></dl></div></article>}
+    <div className="card-actions"><Link className="btn btn-primary" to="/routes">Explorar rutas</Link>{usuario.administrador&&<Link className="btn btn-outline" to="/admin">Administración</Link>}</div>
+    <h2>Mis recorridos</h2>{!cargando&&!error&&!recorridos.length&&<p>Todavía no hay recorridos en esta página de tu historial.</p>}
+    <div className="routes-grid">{recorridos.map(r=><article className="content-card" key={r.recorrido_id}><div className="card-body"><h3>Recorrido {r.estado==='en_curso'?'en curso':r.estado}</h3><p>Inicio: {new Date(r.iniciado_en).toLocaleString('es-CL')}</p><p>{r.paradas_registradas} de {r.total_paradas} paradas registradas</p><Link className="btn-text" to={`/routes/${r.ruta_id}`}>Consultar ruta →</Link>{r.estado==='en_curso'&&<button className="btn btn-outline" disabled={ocupado} type="button" onClick={()=>abandonar(r.recorrido_id)}>Abandonar recorrido</button>}</div></article>)}</div>
+    <div className="usuarios-paginacion"><button className="btn btn-outline" disabled={pagina===1||cargando||ocupado} type="button" onClick={()=>setPagina(v=>v-1)}>Anterior</button><span>Página {pagina}</span><button className="btn btn-outline" disabled={recorridos.length<20||cargando||ocupado} type="button" onClick={()=>setPagina(v=>v+1)}>Siguiente</button></div>
+  </section>
 }
-
-export default Profile
