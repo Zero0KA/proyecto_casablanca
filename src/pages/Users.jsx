@@ -36,22 +36,21 @@ export default function Users() {
   }
   async function habilitar(u){
     if(ocupado)return
-    if(!window.confirm(`¿Habilitar manualmente a ${u.email} para la demostración? No se enviará un correo ni se comprobará que la persona controla esa dirección. La cuenta seguirá siendo turista.`))return
+    if(!window.confirm(`¿Habilitar la cuenta de ${u.email}? Podrá iniciar sesión como turista.`))return
     setOcupado(true);setError('');setMensaje('')
     try{
       const respuesta=await fetchApi(`${API}/admin/usuarios/${u.usuario_id}/habilitar-demo`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({confirmacion_demo:true})})
       const datos=await respuesta.json()
-      if(!respuesta.ok)throw new Error(datos.mensaje||'No se pudo habilitar la cuenta.')
-      setMensaje(datos.mensaje);setRevision(v=>v+1)
+      if(!respuesta.ok)throw new Error(respuesta.status === 404 ? 'No se pudo habilitar la cuenta. Actualiza el listado e intenta nuevamente.' : datos.mensaje||'No se pudo habilitar la cuenta.')
+      setMensaje('Cuenta habilitada.');setRevision(v=>v+1)
     }catch(fallo){setError(fallo.message)}finally{setOcupado(false)}
   }
   return <section className="page usuarios-panel"><h1>Administración de cuentas</h1><p>Lista y bloquea cuentas turistas. Las cuentas administradoras están protegidas.</p>
-    {manual&&<p className="demo-notice">Modo demostración: puedes habilitar turistas pendientes sin comprobar realmente su correo.</p>}
     <form onSubmit={e=>{e.preventDefault();setBusqueda(texto.trim());setPagina(1);setRevision(v=>v+1)}} className="usuarios-busqueda"><label>Buscar por correo<input value={texto} onChange={e=>setTexto(e.target.value)} maxLength={254}/></label><button type="submit" disabled={ocupado}>Buscar</button></form>
     {error&&<p role="alert" className="cuenta-error">{error} <button type="button" onClick={()=>setRevision(v=>v+1)}>Reintentar</button></p>}
     {mensaje&&<p role="status">{mensaje}</p>}{cargando&&<p role="status">Cargando cuentas…</p>}
-    {!error&&!cargando&&<><div className="usuarios-tabla"><table><thead><tr><th>Correo</th><th>Nombre</th><th>Rol</th><th>Estado</th><th>Correo verificado</th><th>Acción</th></tr></thead><tbody>
-      {usuarios.map(u=><tr key={u.usuario_id}><td>{u.email}</td><td>{u.nombre}</td><td>{u.administrador?'Administrador':'Turista'}</td><td>{u.estado}</td><td>{u.correo_verificado?'Sí':'No'}</td><td>{manual&&u.estado==='pendiente'&&!u.correo_verificado&&!u.administrador&&<button type="button" disabled={ocupado} onClick={()=>habilitar(u)}>Habilitar manualmente · demo</button>} <button type="button" disabled={ocupado||u.administrador} onClick={()=>bloquear(u)}>{u.administrador?'Protegida':u.estado==='bloqueado'?'Desbloquear':'Bloquear'}</button></td></tr>)}
+    {!error&&!cargando&&<><div className="usuarios-tabla"><table><thead><tr><th>Correo</th><th>Nombre</th><th>Rol</th><th>Estado</th><th>Correo confirmado</th><th>Acción</th></tr></thead><tbody>
+      {usuarios.map(u=><tr key={u.usuario_id}><td>{u.email}</td><td>{u.nombre}</td><td>{u.administrador?'Administrador':'Turista'}</td><td>{u.estado}</td><td>{u.correo_verificado?'Sí':'No'}</td><td><div className="user-row-actions">{manual&&u.estado==='pendiente'&&!u.correo_verificado&&!u.administrador&&<button type="button" disabled={ocupado} onClick={()=>habilitar(u)}>Habilitar cuenta</button>} <button type="button" disabled={ocupado||u.administrador} onClick={()=>bloquear(u)}>{u.administrador?'Protegida':u.estado==='bloqueado'?'Desbloquear':'Bloquear'}</button></div></td></tr>)}
     </tbody></table></div>{!usuarios.length&&<p>No hay cuentas para esta búsqueda.</p>}
     <div className="usuarios-paginacion"><button type="button" disabled={pagina===1||ocupado} onClick={()=>setPagina(v=>v-1)}>Anterior</button><span>Página {pagina} · {total} cuentas</span><button type="button" disabled={usuarios.length<25||pagina*25>=total||ocupado} onClick={()=>setPagina(v=>v+1)}>Siguiente</button></div></>}
   </section>

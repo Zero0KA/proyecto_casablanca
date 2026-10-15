@@ -27,7 +27,7 @@ export default function Register() {
         if (!Array.isArray(lista) || !lista.length) throw new Error('No hay nacionalidades disponibles.')
         setPaises(lista)
       } catch (fallo) {
-        if (fallo.name !== 'AbortError') setError(fallo.message || 'No se pudo conectar con la API.')
+        if (fallo.name !== 'AbortError') setError(fallo.message || 'No se pudo conectar con el servicio.')
       } finally {
         if (!controller.signal.aborted) setCargando(false)
       }
@@ -47,6 +47,7 @@ export default function Register() {
     if (ocupado) return
     setError(''); setMensaje('')
     if (datos.password !== datos.confirmacion) { setError('Las contraseñas no coinciden.'); return }
+    if (Array.from(datos.password).length < 8 || Array.from(datos.password).length > 128 || !datos.password.trim()) { setError('La contraseña debe tener entre 8 y 128 caracteres.'); return }
     if (!datos.edad.trim()) { setError('Indica tu edad.'); return }
     setOcupado(true)
     try {
@@ -58,18 +59,17 @@ export default function Register() {
       })
       const resultado = await respuesta.json()
       if (!respuesta.ok) throw new Error(resultado.mensaje || 'No se pudo registrar la cuenta.')
-      setMensaje(resultado.mensaje)
+      setMensaje('Cuenta registrada. Su activación está pendiente.')
       setDatos(inicial)
-    } catch (fallo) { setError(fallo.message || 'No se pudo conectar con la API.') }
+    } catch (fallo) { setError(fallo.message || 'No se pudo conectar con el servicio.') }
     finally { setOcupado(false) }
   }
 
   return (
-    <section className="registro-panel"><p className="page-eyebrow">Tu próxima experiencia empieza aquí</p>
+    <section className="registro-panel"><p className="page-eyebrow">REGISTRO</p>
       <Link to="/">← Volver al inicio</Link> · <Link to="/login">Iniciar sesión</Link>
       <h1>Crear cuenta</h1>
-      <p>Regístrate como turista para preparar tu acceso a Casablanca.</p>
-      <p className="registro-nota">En esta etapa guardamos el registro. El envío de verificación del correo sigue pendiente. Las cuentas de prueba se habilitan manualmente.</p>
+      <p>Ingresa tus datos para crear una cuenta.</p>
       {error && <p className="registro-error" role="alert">{error}</p>}
       {mensaje && <p className="registro-exito" role="status">{mensaje}</p>}
       {cargando && <p role="status">Cargando nacionalidades…</p>}
@@ -78,9 +78,9 @@ export default function Register() {
         <fieldset disabled={ocupado || cargando || !paises.length}>
           <label>Nombre<input name="nombre" value={datos.nombre} onChange={cambiar} required maxLength={100} autoComplete="name" /></label>
           <label>Correo electrónico<input name="email" type="email" value={datos.email} onChange={cambiar} required maxLength={254} autoComplete="email" /></label>
-          <label>Contraseña<input name="password" type="password" value={datos.password} onChange={cambiar} required minLength={15} maxLength={128} autoComplete="new-password" aria-describedby="regla-password" /></label>
-          <small id="regla-password">Entre 15 y 128 caracteres; puedes usar una frase. No necesitas un formato Argon2id: la API lo genera.</small>
-          <label>Repetir contraseña<input name="confirmacion" type="password" value={datos.confirmacion} onChange={cambiar} required minLength={15} maxLength={128} autoComplete="new-password" /></label>
+          <label>Contraseña<input name="password" type="password" value={datos.password} onChange={cambiar} required minLength={8} maxLength={128} autoComplete="new-password" aria-describedby="regla-password" /></label>
+          <small id="regla-password">Entre 8 y 128 caracteres.</small>
+          <label>Repetir contraseña<input name="confirmacion" type="password" value={datos.confirmacion} onChange={cambiar} required minLength={8} maxLength={128} autoComplete="new-password" /></label>
           <div className="registro-fila">
             <label>Edad declarada<input name="edad" type="number" min="0" max="120" step="1" value={datos.edad} onChange={cambiar} required /></label>
             <label>Nacionalidad<select name="nacionalidad_codigo" value={datos.nacionalidad_codigo} onChange={cambiar} required><option value="">Selecciona una opción</option>{paises.map(pais => <option key={pais.codigo} value={pais.codigo}>{pais.nombre_es}</option>)}</select></label>

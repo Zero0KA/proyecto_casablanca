@@ -16,15 +16,15 @@ async function destino() {
   if (!pendiente) {
     pendiente = (async () => {
       const respuesta = await fetch(`${BASE}demo-api.json?consulta=${Date.now()}`, { cache: 'no-store', credentials: 'omit' })
-      if (!respuesta.ok) throw new Error('La conexión de la presentación todavía no está publicada.')
+      if (!respuesta.ok) throw new Error('El servicio no está disponible. Intenta nuevamente más tarde.')
       const datos = await respuesta.json()
       if (datos.activo !== true || typeof datos.api_url !== 'string') {
-        throw new Error('La API de la presentación está apagada. El contenido público sigue disponible.')
+        throw new Error('El servicio no está disponible. Intenta nuevamente más tarde.')
       }
       const url = new URL(datos.api_url)
       if (url.protocol !== 'https:' || !/^[a-z0-9-]+\.trycloudflare\.com$/.test(url.hostname) ||
           url.port || url.username || url.password || url.pathname !== '/api' || url.search || url.hash) {
-        throw new Error('La dirección de la API no es válida.')
+        throw new Error('No se pudo establecer la conexión con el servicio.')
       }
       configuracion = { api: url.href, remoto: true, leida: Date.now() }
       return configuracion
@@ -53,7 +53,7 @@ function borrar(api, anterior) {
 
 export async function fetchApi(url, opciones = {}) {
   const ruta = typeof url === 'string' && url.startsWith(`${API_LOCAL}/`) ? url.slice(API_LOCAL.length) : null
-  if (ruta === null || ruta.includes('\\') || ruta.includes('#')) throw new Error('Ruta de API inválida.')
+  if (ruta === null || ruta.includes('\\') || ruta.includes('#')) throw new Error('No se pudo completar la solicitud.')
   const config = await destino()
   const headers = new Headers(opciones.headers)
   const anterior = config.remoto ? leer(config.api) : null
@@ -68,7 +68,7 @@ export async function fetchApi(url, opciones = {}) {
       const datos = await respuesta.clone().json()
       const vence = Date.parse(datos.vence_en)
       if (!TOKEN.test(datos.token_sesion) || !(vence > Date.now())) {
-        throw new Error('La API no entregó una sesión remota válida.')
+        throw new Error('No se pudo iniciar la sesión. Intenta nuevamente.')
       }
       guardar(config.api, datos.token_sesion, vence)
     } else if ((ruta === '/logout' && respuesta.ok) || (ruta === '/sesion' && respuesta.status === 401)) {

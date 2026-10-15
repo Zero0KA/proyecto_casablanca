@@ -1,11 +1,10 @@
 import { fetchApi } from '../components/demoTransport'
 import { useState } from 'react'
-import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { API, useSession } from '../components/SessionContext'
 
 export default function Login() {
   const { aceptarSesion } = useSession()
-  const navigate = useNavigate()
   const location = useLocation()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -32,7 +31,7 @@ export default function Login() {
         datos = await respuesta.json()
       } catch (fallo) {
         throw new Error(
-          'La API no respondió correctamente. Comprueba que esté funcionando.',
+          'No se pudo completar el inicio de sesión. Intenta nuevamente.',
           { cause: fallo }
         )
       }
@@ -58,10 +57,9 @@ export default function Login() {
         if (rutaPermitida || adminPermitido) destinoFinal = solicitado
       }
 
-      aceptarSesion(datos.usuario)
-      navigate(destinoFinal, { replace: true })
+      aceptarSesion(datos.usuario, destinoFinal)
     } catch (fallo) {
-      setError(fallo.message || 'No se pudo conectar con la API.')
+      setError(fallo.message || 'No se pudo conectar con el servicio.')
     } finally {
       setOcupado(false)
     }
@@ -71,10 +69,7 @@ export default function Login() {
     <section className="cuenta-panel">
       <p className="page-eyebrow">Bienvenido a Casablanca</p>
       <h1>Iniciar sesión</h1>
-      <p>
-        Usa una cuenta activa. La verificación por correo se preparará después;
-        ahora solo habilitamos manualmente las cuentas de prueba.
-      </p>
+
 
       {error && <p className="cuenta-error" role="alert">{error}</p>}
 

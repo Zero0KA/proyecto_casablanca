@@ -8,7 +8,7 @@ import teatro from '../assets/teatro.png'
 export const attractions = [
   {
     id: 1,
-    name: 'Museo Arqueologico y Antropológico de Casablanca',
+    name: 'Museo Arqueológico y Antropológico de Casablanca',
     description: 'Espacio cultural municipal que exhibe patrimonio arqueológico y antropológico de la comuna.',
     image: museo,
   },
@@ -27,7 +27,7 @@ export const attractions = [
   {
     id: 4,
     name: 'Biblioteca Municipal',
-    description: 'Espacio cultural municipal de acceso público ubicada dentro del complejo del Centro Cultural de Casablanca.',
+    description: 'Espacio cultural municipal de acceso público ubicado dentro del complejo del Centro Cultural de Casablanca.',
     image: biblioteca,
   },
   {

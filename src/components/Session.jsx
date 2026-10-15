@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
-import { Navigate, useLocation } from 'react-router-dom'
+import { startTransition, useCallback, useEffect, useRef, useState } from 'react'
+import { Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { SessionContext, apiFetch, useSession } from './SessionContext'
 
 export function SessionProvider({ children }) {
+  const navigate = useNavigate()
   const [usuario,setUsuario]=useState(null),[cargando,setCargando]=useState(true),[error,setError]=useState('')
   const revision=useRef(0)
   const refrescar=useCallback(async()=>{
@@ -18,17 +19,25 @@ export function SessionProvider({ children }) {
     window.addEventListener('focus',refrescar)
     return()=>{window.clearTimeout(timer);window.clearInterval(intervalo);window.removeEventListener('focus',refrescar);control.current++}
   },[refrescar])
-  function aceptarSesion(nuevoUsuario){
+  function aceptarSesion(nuevoUsuario, destino){
     // Descarta respuestas de comprobaciones anteriores al login.
     revision.current++
-    setUsuario(nuevoUsuario)
-    setError('')
-    setCargando(false)
+    startTransition(() => {
+      setUsuario(nuevoUsuario)
+      setError('')
+      setCargando(false)
+      navigate(destino || (nuevoUsuario.administrador === true ? '/admin' : '/profile'), { replace: true })
+    })
   }
   async function salir(){
     revision.current++
     await apiFetch('/logout',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'})
-    revision.current++;setUsuario(null);setError('')
+    revision.current++
+    // La ruta y la sesión cambian en la misma transición; el guard no debe abrir Login al salir.
+    startTransition(() => {
+      setUsuario(null); setError('')
+      navigate('/', { replace: true })
+    })
   }
   return <SessionContext.Provider value={{usuario,cargando,error,refrescar,salir,aceptarSesion}}>{children}</SessionContext.Provider>
 }
@@ -38,5 +47,13 @@ export function RequireSession({children,admin=false}){
   if(error)return <section className="page"><p role="alert">{error}</p><button className="btn btn-primary" type="button" onClick={refrescar}>Reintentar</button></section>
   if(!usuario)return <Navigate to="/login" replace state={{from:location.pathname+location.search}}/>
   if(admin&&usuario.administrador!==true)return <Navigate to="/profile" replace/>
+  return children
+}
+
+// Las cuentas con sesión no necesitan volver a los formularios de acceso.
+export function GuestOnly({ children }) {
+  const { usuario, cargando } = useSession()
+  if (cargando) return <section className="page"><p role="status">Comprobando sesión…</p></section>
+  if (usuario) return <Navigate to={usuario.administrador === true ? '/admin' : '/profile'} replace />
   return children
 }

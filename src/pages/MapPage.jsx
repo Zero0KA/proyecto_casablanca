@@ -29,7 +29,6 @@ export default function MapPage() {
       <p className="page-eyebrow">Ubica los lugares</p><h1>Mapa</h1>
       <p className="page-intro">Selecciona un punto para conocer el lugar y abrir su detalle.</p>
     </header>
-    <p className="demo-notice">Ubicaciones orientativas del prototipo. Por ahora la Biblioteca es el único lugar con coordenadas disponibles.</p>
     <div className="map-frame" role="region" aria-label="Mapa de Casablanca">
       <MapContainer key={revision} className="map-canvas" center={center} zoom={16} scrollWheelZoom={false}>
         <TileLayer url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -47,7 +46,6 @@ export default function MapPage() {
     <h2>Lugares señalados</h2>
     {located.length ? <ul className="map-place-list">{located.map(item => <li key={item.id}>
       <Link to={`/attractions/${item.id}`}>{item.name}</Link>
-    </li>)}</ul> : <p>Todavía no hay lugares con ubicación disponible.</p>}
-    <p className="map-note">Necesitas Internet para cargar el mapa. Puedes explorarlo sin iniciar sesión.</p>
+    </li>)}</ul> : <p>No hay ubicaciones disponibles.</p>}
   </section>
 }

@@ -31,6 +31,8 @@ const { crearRouterTurismo } = require('./turismo.cjs');
 app.use('/api', crearRouterTurismo(pool));
 // El CRUD ahora usa la sesión de la persona, sin recurrir al token fijo.
 app.use('/api/categorias', exigirCookie);
+const { crearRouterCategorias } = require('./categorias.cjs');
+app.use('/api/categorias', crearRouterCategorias(pool));
 
 // Registro público: no utiliza el token de demostración.
 const { crearRouterRegistro } = require('./registro.cjs');
@@ -113,62 +115,6 @@ app.get('/api/categorias', async (req, res) => {
   }
 });
 
-// Crea una categoría inactiva. La BD valida formato y unicidad.
-app.post('/api/categorias', async (req, res) => {
-  const { codigo, icono_codigo } = req.body || {};
-
-  if (
-    typeof codigo !== 'string' ||
-    typeof icono_codigo !== 'string' ||
-    !codigo.trim() ||
-    !icono_codigo.trim()
-  ) {
-    return res.status(400).json({
-      mensaje: 'Debes indicar código e icono.',
-    });
-  }
-
-  const token = req.tokenSesion;
-
-  if (!token) {
-    return res.status(503).json({
-      mensaje: 'Falta configurar la sesión de demostración.',
-    });
-  }
-
-  try {
-    const { rows } = await pool.query(
-      `SELECT public.admin_crear_categoria_atractivo(
-        $1::text, $2::text, $3::text
-      ) AS categoria_id`,
-      [token, codigo.trim(), icono_codigo.trim()]
-    );
-
-    return res.status(201).json(rows[0]);
-  } catch (error) {
-    console.error('Error al crear categoría:', error.code || 'sin código');
-
-    if (error.code === '23505') {
-      return res.status(409).json({
-        mensaje: 'Ya existe una categoría con ese código.',
-      });
-    }
-
-    if (['23514', '23502', '22001', '22023'].includes(error.code)) {
-      return res.status(400).json({
-        mensaje: 'El código o el icono no cumplen las reglas de la BD.',
-      });
-    }
-
-    return res.status(error.code === '42501' ? 403 : 500).json({
-      mensaje: error.code === '42501'
-        ? 'La sesión no permite administrar categorías.'
-        : 'No se pudo crear la categoría.',
-    });
-  }
-});
-
-// Devuelve JSON cuando el cuerpo recibido no es válido.
 app.use((error, _req, res, next) => {
   if (error.type === 'entity.parse.failed') {
     return res.status(400).json({

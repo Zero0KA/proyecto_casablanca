@@ -18,8 +18,8 @@ function validarRegistro(body) {
   if (longitud(email) > 254 || !/^[^\s@]+@[^\s@]+$/.test(email)) throw new Error('Indica un correo válido.');
   if (!nombre || longitud(nombre) > 100) throw new Error('El nombre debe tener entre 1 y 100 caracteres.');
   // Regla del backend; no modifica los CHECK de la BD. No recortar la contraseña.
-  if (longitud(body.password) < 15 || longitud(body.password) > 128 || !body.password.trim()) {
-    throw new Error('La contraseña debe tener entre 15 y 128 caracteres. Puedes usar una frase.');
+  if (longitud(body.password) < 8 || longitud(body.password) > 128 || !body.password.trim()) {
+    throw new Error('La contraseña debe tener entre 8 y 128 caracteres. Puedes usar una frase.');
   }
   if (!Number.isInteger(body.edad) || body.edad < 0 || body.edad > 120) throw new Error('La edad debe ser un entero entre 0 y 120.');
   if (!/^[A-Z]{2}$/.test(nacionalidad)) throw new Error('Selecciona una nacionalidad del catálogo.');

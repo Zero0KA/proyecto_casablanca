@@ -35,3 +35,12 @@ node_modules/
 dist/
 
 .respaldo-mapa/
+
+# Copias locales del parche de Inicio
+.respaldo-inicio/
+
+# Copias locales de los ajustes de contenido
+.respaldo-ajustes/
+
+# Copias locales del refinamiento
+.respaldo-refinamiento/
