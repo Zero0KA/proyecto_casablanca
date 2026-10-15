@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { attractions } from '../data/attractions'
 
 function Attractions() {
@@ -27,6 +28,7 @@ function Attractions() {
             <div className="card-body">
               <h2>{attraction.name}</h2>
               <p>{attraction.description}</p>
+              <Link className="btn btn-text" to={`/attractions/${attraction.id}`}>Ver detalle</Link>
             </div>
           </article>
         ))}

@@ -1,0 +1,18 @@
+.map-page .map-frame { padding: 0; overflow: hidden; isolation: isolate; border: 2px solid var(--wine); border-radius: 1rem; background: var(--surface); box-shadow: none; }
+.map-page .map-canvas { width: 100%; height: clamp(360px, 62svh, 640px); font-family: var(--sans); }
+.map-page .map-note { margin-top: 1rem; line-height: 1.6; }
+.map-page .map-canvas .leaflet-bar a { width: 44px; height: 44px; line-height: 44px; font-size: 1.4rem; }
+.map-page .leaflet-pin { background: none; border: 0; }
+.map-page .leaflet-pin span { display: block; position: relative; width: 36px; height: 36px; border-radius: 50%; background: var(--wine); border: 4px solid #fff; box-shadow: 0 0 0 2px var(--wine); }
+.map-page .leaflet-pin span::after { content: ''; position: absolute; inset: 7px; border-radius: 50%; background: var(--gold); }
+.map-page .leaflet-pin:focus-visible, .map-page .leaflet-control a:focus-visible { outline: 3px solid #111; outline-offset: 5px; }
+.map-page .leaflet-popup-content { font-size: 1rem; line-height: 1.5; }
+.map-page .leaflet-popup-content a { color: var(--wine); text-decoration: underline; }
+.map-page .map-place-list { padding-left: 1.4rem; }
+.map-page .map-place-list a { display: inline-block; padding: .6rem 0; color: var(--wine); }
+.map-detail-page .map-detail-back { display: inline-block; padding: .65rem 0; margin-bottom: 1rem; color: var(--wine); }
+.map-detail-page .map-detail-article { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2rem; align-items: start; }
+.map-detail-page .map-detail-photo { width: 100%; aspect-ratio: 3 / 2; object-fit: cover; border-radius: 1rem; }
+.map-detail-page .map-detail-copy h1 { text-align: left; }
+.map-detail-page .map-detail-copy p { line-height: 1.7; }
+@media (max-width: 700px) { .map-detail-page .map-detail-article { grid-template-columns: minmax(0, 1fr); } }

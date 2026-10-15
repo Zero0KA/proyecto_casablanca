@@ -33,3 +33,5 @@ backend/.env
 .demo-publica.lock
 node_modules/
 dist/
+
+.respaldo-mapa/

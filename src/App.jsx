@@ -4,6 +4,7 @@ import Header from './components/Header'
 import Footer from './components/Footer'
 import Home from './pages/Home'
 import MapPage from './pages/MapPage'
+import AttractionDetail from './pages/AttractionDetail'
 import Attractions from './pages/Attractions'
 import RoutesPage from './pages/Routes'
 import Profile from './pages/Profile'
@@ -38,6 +39,7 @@ function App() {
           <Route path="/map" element={<MapPage />} />
           <Route path="/routes" element={<RoutesPage />} />
           <Route path="/attractions" element={<Attractions />} />
+          <Route path="/attractions/:id" element={<AttractionDetail />} />
           <Route path="/profile" element={<RequireSession><Profile /></RequireSession>} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
