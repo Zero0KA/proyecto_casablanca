@@ -1,0 +1,15 @@
+.historic-catalog-banner { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; border: 1px solid #d9ddca; background: #f1f0e4; border-radius: 15px; padding: 28px; overflow: hidden; margin: 0 0 40px; align-items: center; }
+.historic-catalog-banner > div > p { font-size: .7rem; letter-spacing: 1.5px; color: #806344; margin: 0 0 10px; }
+.historic-catalog-banner h2 { color: #2e442e; font: 500 1.75rem/1.15 Georgia, serif; margin: 0 0 14px; }
+.historic-catalog-banner > div > span { display: block; color: #5d6954; font-size: .9rem; margin-bottom: 20px; }
+.historic-catalog-banner > div > a { display: inline-flex; align-items: center; gap: 20px; background: #762e40; color: #fffaf1; border-radius: 7px; padding: 12px 18px; min-height: 44px; font-size: .85rem; text-decoration: none; font-weight: 600; }
+.historic-catalog-banner > div > a:hover { background: #5b2232; }
+.historic-catalog-preview { border: 4px solid #fffdf1; border-radius: 9px; overflow: hidden; box-shadow: 0 4px 12px #40543412; display: block; }
+.historic-catalog-preview img { display: block; width: 100%; aspect-ratio: 1100 / 700; object-fit: cover; }
+.historic-catalog .catalog-itinerary { margin-top: 24px; }
+.historic-catalog .catalog-itinerary li { padding-top: 23px; padding-bottom: 23px; }
+.historic-catalog .catalog-stop-copy .catalog-stop-kind { font-size: .72rem; text-transform: uppercase; letter-spacing: 1.1px; color: #82664b; margin: 0 0 6px; }
+.catalog-landmark-art { width: 180px; min-height: 130px; border-radius: 9px; display: grid; place-items: center; color: #78906e; background: #eeefdf; border: 1px solid #dfe3cf; }
+.catalog-landmark-art svg { width: 76px; height: 76px; }
+@media (max-width: 700px) { .historic-catalog-banner { grid-template-columns: 1fr; padding: 22px; gap: 23px; }.historic-catalog-preview { max-height: 200px; }.catalog-landmark-art { width: min(180px, 100%); }.historic-catalog .catalog-stop-copy .card-actions { gap: 16px; } }
+@media (max-width: 650px) { .catalog-landmark-art { grid-column: 2; width: min(100%, 300px); min-height: 130px; } }

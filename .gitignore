@@ -44,3 +44,6 @@ dist/
 
 # Copias locales del refinamiento
 .respaldo-refinamiento/
+
+# Copias locales del mapa ilustrado
+.respaldo-casco-historico/

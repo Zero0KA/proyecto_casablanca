@@ -7,7 +7,8 @@ export const routes = [
   {
     id: 2,
     name: 'Casco Histórico',
-    attractionIds: [2, 3],
+    // Atractivos con ficha propia; las doce paradas están en historicRoute.js.
+    attractionIds: [2, 3, 5, 1],
   },
   {
     id: 3,

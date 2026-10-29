@@ -1,5 +1,7 @@
 # Casablanca integrado — diseño y funciones reales
 
+**Actualización del mapa (29/10/2026):** el Casco Histórico ya tiene su circuito ilustrado de doce paradas y una vista geográfica separada. El funcionamiento, los límites y la conexión futura a BD se detallan en [docs/MAPA_CASCO_HISTORICO.md](docs/MAPA_CASCO_HISTORICO.md). Se conserva la instalación existente; aplicar el mapa no requiere repetirla.
+
 ## Instalación sin perder tu versión funcional
 
 1. Extraer el ZIP en una carpeta NUEVA. No reemplazar ni borrar todavía tu proyecto anterior.
@@ -15,7 +17,7 @@ Puedes nombrar la carpeta nueva `casablanca_integrado` y moverla donde quieras: 
 
 ## Menús según la cuenta
 
-- Visitante: Inicio, Mapa, Rutas, Atractivos, Iniciar sesión y Registrarse.
+- Visitante: Inicio, Mapa, Rutas, Atractivos e Iniciar sesión. El registro se abre desde el formulario de acceso.
 - Turista: contenido público, Mi cuenta y Cerrar sesión. No aparece Administración.
 - Admin: lo anterior más Administración; dentro se accede a Categorías y Usuarios.
 - Las direcciones administrativas siguen protegidas aunque alguien las escriba. El backend y la BD también comprueban los permisos.
@@ -35,13 +37,13 @@ Se incorporaron endpoints que usan las funciones YA EXISTENTES de la BD:
 
 Al solicitar iniciar una ruta sin sesión, se pide login y se regresa a la misma ruta. No se crea nada automáticamente al volver: la persona pulsa Confirmar inicio del recorrido. Una ruta ya abierta produce un conflicto y se puede consultar desde Mi cuenta.
 
-Si no hay rutas publicadas en la BD, se muestran las tres tarjetas de ejemplo del compañero, IDENTIFICADAS como ejemplos. No se convierten sus IDs numéricos en UUID ni se inventa un inicio exitoso.
+Además de las rutas publicadas en la BD, se conserva el catálogo local de tres recorridos. El Casco Histórico tiene las doce paradas del folleto. Sus IDs numéricos no se convierten en UUID ni se inventa un inicio exitoso.
 
 Para mostrar una ruta REAL en la demo, puedes ejecutar **opcionalmente** `bd/poblacion_ruta_demo.sql` en pgAdmin sobre casablanca con tu conexión administrativa. Crea una ruta publicada DEMO con tres paradas y traducciones en es/en usando las funciones administrativas. No cambia tablas, funciones, roles ni contraseñas; repetirlo no vuelve a crear la ruta. El contenido no es un itinerario oficial ni validado por la municipalidad. Después recargar Rutas.
 
 El inicio guarda datos REALES: aparecen en el historial. Abandonar conserva esos registros. No se proporciona un borrado en cascada para limpiar rutas con historial; las protecciones de la BD permanecen. El SQL opcional no debe incorporarse al instalador como datos obligatorios.
 
-No se integró registrar pasos por QR ni completar recorridos. El mapa conserva el marcador 'próximamente'. Los atractivos públicos siguen utilizando el catálogo de presentación del compañero, con un aviso que lo identifica.
+No se integró registrar pasos por QR ni completar recorridos. El mapa ahora ofrece el circuito ilustrado del Casco Histórico y conserva la vista Leaflet de Biblioteca. Los atractivos públicos siguen usando el catálogo de presentación; sus límites están documentados y no se presentan como mensajes técnicos dentro de la página.
 
 ## Qué se conservó y qué cambió
 
@@ -49,13 +51,13 @@ Se conservan su portada, fotografías, colores, tarjetas, menú móvil y pie de 
 
 Cambios compartidos: App/menú/session context, perfil y rutas; estilos coherentes para login, registro y administración. El proxy de Vite se conserva apuntando a 3001. La eliminación de categorías ahora envía JSON y deja de ser rechazada por la protección de origen. Se separó el contexto/hooks de sesiones para resolver el error de lint. Se retiró la referencia a una fuente ausente; permanece la selección local y las fuentes alternativas.
 
-Las fotografías grandes se conservan como fueron entregadas. Optimización de imágenes y mapa real quedan para una etapa posterior. El backend alternativo no se ejecuta y su `.env` no se copia.
+Las fotografías grandes se conservan como fueron entregadas. La optimización de imágenes y la conexión del catálogo completo a BD quedan para una etapa posterior. El backend alternativo no se ejecuta y su `.env` no se copia.
 
 No se modificó la BD ni se ejecutó SQL contra ella desde este entorno. Los cambios permanentes del login y del borrado administrativo que aplicaste antes deben seguir en tu instalador actualizado; esta integración no añade funciones SQL nuevas.
 
 ## Prueba recomendada en tu PC
 
-1. Sin sesión: recorrer Inicio/Atractivos/Mapa/Rutas y ver Registro/Login en el menú.
+1. Sin sesión: recorrer Inicio/Atractivos/Mapa/Rutas y abrir Iniciar sesión; desde allí se accede al registro.
 2. Turista: login, Mi cuenta con datos reales; sin enlace Administración. URL directa administrativa denegada.
 3. Admin: Administración → Categorías; crear, cambiar icono y eliminar. Administración → Usuarios; listar y bloquear/desbloquear una cuenta turista.
 4. Si creaste la ruta opcional: cerrar sesión, abrir Rutas → Iniciar recorrido; login turista → volver a esa ruta → Confirmar inicio → Ver mis recorridos. Abandonar para cerrar el intento antes de iniciarlo nuevamente.
@@ -71,6 +73,6 @@ Para probar admin y turista simultáneamente usar perfiles separados/incógnito.
 - Prueba DOM con React/JSDOM y API simulada: navegación pública, redirección login, vuelta a ruta, inicio explícito, perfil, rechazo turista, menú admin y creación/eliminación de categorías correctos.
 - SQL de población: sintaxis SQL/PLpgSQL analizada; no ejecutado contra PostgreSQL en este entorno.
 
-No se realizó prueba visual completa en Chromium: su descarga no pudo completarse en este entorno. Tampoco se accedió al PostgreSQL de tu PC. La prueba final de navegador, permisos y recorrido real se hará en tu instalación.
+Las pruebas anteriores corresponden a la integración inicial. La actualización del mapa se revisa en Chromium con API simulada y sus resultados se registran en la documentación del mapa. No se accedió al PostgreSQL de tu PC; las pruebas con tu BD real se mantienen como comprobación local.
 
-GitHub Pages solo publicará el frontend estático. Este paquete conectado es para la demo local; publicar allí el diseño no despliega la API ni PostgreSQL. No se hicieron commits, pushes ni publicaciones.
+GitHub Pages publica el frontend estático. El procedimiento del túnel permite que consulte la API local durante las presentaciones; no aloja Node ni PostgreSQL. Para desarrollar el mapa se usa la demostración local como antes. La actualización del mapa no ejecuta el lanzador de publicación ni hace commit o push.
