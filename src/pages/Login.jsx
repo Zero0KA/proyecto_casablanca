@@ -53,7 +53,7 @@ export default function Login() {
       // Solo recuperamos destinos conocidos y permitidos para la cuenta.
       if (typeof solicitado === 'string' && !solicitado.includes('\\')) {
         const rutaPermitida = /^\/routes\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/start(?:\?[^#]*)?$/i.test(solicitado)
-        const adminPermitido = administrador && /^\/admin(?:\/(?:users|categories))?$/.test(solicitado)
+        const adminPermitido = administrador && (/^\/admin(?:\/(?:users|categories|atractivos|rutas))?$/.test(solicitado) || /^\/admin\/rutas\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/paradas$/i.test(solicitado))
         if (rutaPermitida || adminPermitido) destinoFinal = solicitado
       }
 

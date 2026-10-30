@@ -1,0 +1,22 @@
+{
+  "at": "2026-10-30T03:07:28.171Z",
+  "checks": [
+    "URL administrativa sin sesión dirige al login",
+    "Login real de admin vuelve al panel solicitado",
+    "Listado administrativo muestra los seis registros reales",
+    "Accesibilidad automática: listado de atractivos",
+    "Accesibilidad automática: formulario bilingüe",
+    "Crear, editar y eliminar atractivo desde el formulario y BD real",
+    "Rutas abre sus doce paradas reales",
+    "Crear parada intermedia, mover y eliminar conserva el orden",
+    "Administración móvil: sin desbordar la página, tabla desplazable",
+    "Catálogo de mapas y selección del circuito ilustrado",
+    "Geográfico: doce marcadores y selección conservada",
+    "Aproximación visible y marcador seleccionado en rojo",
+    "Accesibilidad automática: mapa geográfico",
+    "Mapa responsive en 320, 390, 768, 1024 y 1440 píxeles",
+    "Enlaces antiguos redirigen al mapa del circuito",
+    "Cambiar de admin a turista oculta el menú y protege la URL",
+    "Sin errores JavaScript en los recorridos comprobados"
+  ]
+}

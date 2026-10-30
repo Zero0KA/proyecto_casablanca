@@ -17,7 +17,7 @@ const pool = new Pool({
 require('./modo-publico.cjs').configurarModoPublico(app, pool);
 
 // Permite recibir formularios enviados como JSON.
-app.use(express.json({ limit: '16kb' }));
+app.use(express.json({ limit: '192kb' }));
 
 app.use((_req, res, next) => {
   res.set('Cache-Control', 'no-store');
@@ -29,6 +29,8 @@ app.use('/api', protegerOrigen);
 app.use('/api', crearRouterSesiones(pool));
 const { crearRouterTurismo } = require('./turismo.cjs');
 app.use('/api', crearRouterTurismo(pool));
+const { crearRouterContenidos } = require('./contenidos.cjs');
+app.use('/api/admin', crearRouterContenidos(pool));
 // El CRUD ahora usa la sesión de la persona, sin recurrir al token fijo.
 app.use('/api/categorias', exigirCookie);
 const { crearRouterCategorias } = require('./categorias.cjs');

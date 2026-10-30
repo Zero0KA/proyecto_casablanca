@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link, NavLink } from 'react-router-dom'
 import { useSession } from './SessionContext'
 
-const links = [{ to: '/', label: 'Inicio', end: true }, { to: '/attractions', label: 'Atractivos' }, { to: '/routes', label: 'Rutas' }, { to: '/map', label: 'Mapa' }]
+const links = [{ to: '/', label: 'Inicio', end: true }, { to: '/attractions', label: 'Atractivos' }, { to: '/routes', label: 'Rutas' }, { to: '/mapas', label: 'Mapas' }]
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [aviso, setAviso] = useState('')

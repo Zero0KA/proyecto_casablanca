@@ -1,0 +1,477 @@
+-- Para la BD existente. Ejecutar como postgres. No toca cuentas ni carga contenido automáticamente.
+BEGIN;
+-- Actualización sobre una instalación existente. Ejecutar como postgres.
+-- No elimina datos ni ejecuta la población inicial.
+
+-- Los triggers diferidos se ejecutan al COMMIT, cuando ya terminó la llamada
+-- SECURITY DEFINER. Usan el propietario interno para poder comprobar la integridad.
+GRANT CREATE ON SCHEMA public TO casablanca_admin_owner;
+ALTER FUNCTION public.ruta_comprobar_publicacion() OWNER TO casablanca_admin_owner;
+ALTER FUNCTION public.atractivo_comprobar_publicacion() OWNER TO casablanca_admin_owner;
+ALTER FUNCTION public.categoria_comprobar_activacion() OWNER TO casablanca_admin_owner;
+ALTER FUNCTION public.ruta_comprobar_publicacion() SECURITY DEFINER;
+ALTER FUNCTION public.atractivo_comprobar_publicacion() SECURITY DEFINER;
+ALTER FUNCTION public.categoria_comprobar_activacion() SECURITY DEFINER;
+ALTER FUNCTION public.ruta_comprobar_publicacion() SET search_path = pg_catalog, pg_temp;
+ALTER FUNCTION public.atractivo_comprobar_publicacion() SET search_path = pg_catalog, pg_temp;
+ALTER FUNCTION public.categoria_comprobar_activacion() SET search_path = pg_catalog, pg_temp;
+REVOKE ALL ON FUNCTION public.ruta_comprobar_publicacion(),
+    public.atractivo_comprobar_publicacion(), public.categoria_comprobar_activacion()
+    FROM PUBLIC, casablanca_api;
+REVOKE CREATE ON SCHEMA public FROM casablanca_admin_owner;
+
+CREATE OR REPLACE FUNCTION public.admin_bloquear_ruta_edicion(p_token text, p_ruta_id uuid)
+RETURNS void LANGUAGE plpgsql SECURITY DEFINER
+SET search_path = pg_catalog, pg_temp AS $$
+BEGIN
+    PERFORM public.exigir_administrador(p_token);
+    PERFORM 1 FROM public.ruta WHERE id = p_ruta_id FOR UPDATE;
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'La ruta no existe' USING ERRCODE = 'P0002';
+    END IF;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION public.admin_eliminar_atractivo(p_token text, p_atractivo_id uuid)
+RETURNS boolean LANGUAGE plpgsql SECURITY DEFINER
+SET search_path = pg_catalog, pg_temp AS $$
+DECLARE v_estado text;
+BEGIN
+    PERFORM public.exigir_administrador(p_token);
+    SELECT estado INTO v_estado FROM public.atractivo
+    WHERE id = p_atractivo_id FOR UPDATE;
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'El atractivo no existe' USING ERRCODE = 'P0002';
+    END IF;
+    IF v_estado = 'publicado' THEN
+        RAISE EXCEPTION 'Retira el atractivo antes de eliminarlo' USING ERRCODE = '55000';
+    END IF;
+    IF EXISTS (SELECT 1 FROM public.ruta_parada WHERE atractivo_id = p_atractivo_id) THEN
+        RAISE EXCEPTION 'El atractivo está asociado a paradas; modifica esas asociaciones antes de eliminarlo'
+            USING ERRCODE = '23503';
+    END IF;
+    DELETE FROM public.atractivo_categoria WHERE atractivo_id = p_atractivo_id;
+    DELETE FROM public.atractivo_traduccion WHERE atractivo_id = p_atractivo_id;
+    DELETE FROM public.atractivo WHERE id = p_atractivo_id;
+    RETURN true;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION public.admin_eliminar_ruta(p_token text, p_ruta_id uuid)
+RETURNS boolean LANGUAGE plpgsql SECURITY DEFINER
+SET search_path = pg_catalog, pg_temp AS $$
+DECLARE v_estado text;
+BEGIN
+    PERFORM public.exigir_administrador(p_token);
+    SELECT estado INTO v_estado FROM public.ruta WHERE id = p_ruta_id FOR UPDATE;
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'La ruta no existe' USING ERRCODE = 'P0002';
+    END IF;
+    IF v_estado = 'publicado' THEN
+        RAISE EXCEPTION 'Retira la ruta antes de eliminarla' USING ERRCODE = '55000';
+    END IF;
+    IF EXISTS (SELECT 1 FROM public.recorrido_usuario WHERE ruta_id = p_ruta_id) THEN
+        RAISE EXCEPTION 'La ruta tiene recorridos asociados; archívala para conservar el historial'
+            USING ERRCODE = '23503';
+    END IF;
+    DELETE FROM public.qr_parada AS q USING public.ruta_parada AS p
+    WHERE q.parada_id = p.id AND p.ruta_id = p_ruta_id;
+    DELETE FROM public.ruta_parada_traduccion AS t USING public.ruta_parada AS p
+    WHERE t.parada_id = p.id AND p.ruta_id = p_ruta_id;
+    DELETE FROM public.ruta_parada WHERE ruta_id = p_ruta_id;
+    DELETE FROM public.ruta_traduccion WHERE ruta_id = p_ruta_id;
+    DELETE FROM public.ruta WHERE id = p_ruta_id;
+    RETURN true;
+END;
+$$;
+
+-- El rol de conexión continúa sin acceso directo de escritura a las tablas.
+GRANT DELETE ON public.atractivo, public.atractivo_traduccion,
+    public.ruta, public.ruta_traduccion TO casablanca_admin_owner;
+GRANT SELECT (ruta_id) ON public.recorrido_usuario TO casablanca_admin_owner;
+REVOKE ALL ON FUNCTION public.admin_bloquear_ruta_edicion(text, uuid),
+    public.admin_eliminar_atractivo(text, uuid), public.admin_eliminar_ruta(text, uuid)
+    FROM PUBLIC;
+GRANT CREATE ON SCHEMA public TO casablanca_admin_owner;
+ALTER FUNCTION public.admin_bloquear_ruta_edicion(text, uuid) OWNER TO casablanca_admin_owner;
+ALTER FUNCTION public.admin_eliminar_atractivo(text, uuid) OWNER TO casablanca_admin_owner;
+ALTER FUNCTION public.admin_eliminar_ruta(text, uuid) OWNER TO casablanca_admin_owner;
+REVOKE CREATE ON SCHEMA public FROM casablanca_admin_owner;
+GRANT EXECUTE ON FUNCTION public.admin_bloquear_ruta_edicion(text, uuid),
+    public.admin_eliminar_atractivo(text, uuid), public.admin_eliminar_ruta(text, uuid)
+    TO casablanca_api;
+
+
+
+-- Define la carga inicial; no inserta registros hasta que un administrador la solicite.
+CREATE OR REPLACE FUNCTION public.admin_cargar_catalogo_inicial(p_token text)
+RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER
+SET search_path = pg_catalog, pg_temp AS $function$
+DECLARE
+    v_catalogo jsonb := $catalogo${
+  "atractivos": [
+    {
+      "id": "79e650f2-a038-5ac3-90b4-fe77e5a8fd6d",
+      "local_id": 1,
+      "nombre": "Museo Arqueológico y Antropológico de Casablanca",
+      "descripcion": "Espacio cultural municipal que exhibe patrimonio arqueológico y antropológico de la comuna.",
+      "nombre_en": "Archaeological and Anthropological Museum of Casablanca",
+      "descripcion_en": "Municipal cultural space displaying the archaeological and anthropological heritage of the commune.",
+      "imagen": "images/museo.jpg",
+      "latitud": -33.3206622,
+      "longitud": -71.4112624
+    },
+    {
+      "id": "6ecf2149-2edf-51b4-ae35-dca4d813c0ec",
+      "local_id": 2,
+      "nombre": "Plaza de Armas de Casablanca",
+      "descripcion": "Plaza central de la comuna, punto de encuentro histórico junto a la Parroquia Santa Bárbara.",
+      "nombre_en": "Casablanca Main Square",
+      "descripcion_en": "The central square, a historic meeting place next to Santa Bárbara Parish.",
+      "imagen": "images/plaza.jpg",
+      "latitud": -33.32052365,
+      "longitud": -71.41010835
+    },
+    {
+      "id": "dda20210-be8b-5063-8849-37c8960d451e",
+      "local_id": 3,
+      "nombre": "Parroquia Santa Bárbara",
+      "descripcion": "Iglesia principal de Casablanca, dedicada a Santa Bárbara, patrona de la comuna.",
+      "nombre_en": "Santa Bárbara Parish",
+      "descripcion_en": "The main church of Casablanca, dedicated to Santa Bárbara.",
+      "imagen": "images/parroquia.jpg",
+      "latitud": -33.32043946,
+      "longitud": -71.41089435
+    },
+    {
+      "id": "0836ef48-946b-5958-b4bc-76b3fa99d611",
+      "local_id": 4,
+      "nombre": "Biblioteca Municipal",
+      "descripcion": "Espacio cultural municipal de acceso público ubicado dentro del complejo del Centro Cultural de Casablanca.",
+      "nombre_en": "Municipal Library",
+      "descripcion_en": "A public municipal library within the Casablanca Cultural Centre.",
+      "imagen": "images/biblioteca.jpg",
+      "latitud": -33.32085,
+      "longitud": -71.4109738
+    },
+    {
+      "id": "1f682273-6957-5dbf-8f87-adb8c349a333",
+      "local_id": 5,
+      "nombre": "Centro Cultural de Casablanca",
+      "descripcion": "Espacio municipal dedicado a actividades y difusión cultural de la comuna.",
+      "nombre_en": "Casablanca Cultural Centre",
+      "descripcion_en": "A municipal space for cultural activities in the commune.",
+      "imagen": "images/centroCultural.jpg",
+      "latitud": -33.32072069,
+      "longitud": -71.41119225
+    },
+    {
+      "id": "59ef1d81-6c45-5bc5-a20e-0c0be94944d6",
+      "local_id": 6,
+      "nombre": "Teatro Municipal",
+      "descripcion": "Espacio cultural municipal para presentaciones y eventos.",
+      "nombre_en": "Municipal Theatre",
+      "descripcion_en": "A municipal venue for performances and events.",
+      "imagen": "images/teatro.png",
+      "latitud": null,
+      "longitud": null
+    }
+  ],
+  "rutas": [
+    {
+      "id": "2a92f1d8-b3af-5b37-9d19-2c9ec57f5088",
+      "local_id": 1,
+      "nombre": "Museo de Casablanca",
+      "descripcion": "Visita al Museo Arqueológico y Antropológico de Casablanca.",
+      "nombre_en": "Casablanca Museum",
+      "descripcion_en": "A visit to the Archaeological and Anthropological Museum of Casablanca.",
+      "imagen": "images/museo.jpg",
+      "paradas": [
+        {
+          "key": "museo",
+          "order": 1,
+          "name": "Museo Arqueológico y Antropológico de Casablanca",
+          "description": "Espacio cultural municipal que exhibe patrimonio arqueológico y antropológico de la comuna.",
+          "id": "6a472313-4f88-5442-8fd2-c2111a5f3197",
+          "atractivo_id": "79e650f2-a038-5ac3-90b4-fe77e5a8fd6d",
+          "imagen": "images/museo.jpg",
+          "latitud": -33.3206622,
+          "longitud": -71.4112624,
+          "nombre_en": "Museo Arqueológico y Antropológico de Casablanca",
+          "descripcion_en": "Stop 1 on the Casablanca Museum route."
+        }
+      ]
+    },
+    {
+      "id": "b6875fb0-5938-5ea5-9644-53c7fe5114dc",
+      "local_id": 2,
+      "nombre": "Casco Histórico",
+      "descripcion": "Doce paradas por las plazas, casas y espacios culturales del centro de Casablanca.",
+      "nombre_en": "Historic Centre",
+      "descripcion_en": "Twelve stops through the squares, houses and cultural spaces of central Casablanca.",
+      "imagen": "maps/casco-historico.svg",
+      "paradas": [
+        {
+          "key": "el_control",
+          "order": 1,
+          "name": "El Control",
+          "description": "Punto de inicio del circuito del Casco Histórico.",
+          "id": "c8fdc6d6-3131-532b-a94c-f2d47f3d6908",
+          "atractivo_id": null,
+          "imagen": "maps/casco-historico.svg",
+          "latitud": -33.3170602,
+          "longitud": -71.4088361,
+          "nombre_en": "El Control",
+          "descripcion_en": "Stop 1 on the Historic Centre route.",
+          "referencia_geografica": "Monolito del antiguo camino, junto a Constitución y Buin.",
+          "precision": "cartographic"
+        },
+        {
+          "key": "plaza_bicentenario",
+          "order": 2,
+          "name": "Plaza Bicentenario",
+          "description": "Primera plaza del recorrido, antes de continuar por Chacabuco.",
+          "id": "c55c39c9-498f-54a0-9d60-77dc44987103",
+          "atractivo_id": null,
+          "imagen": "maps/casco-historico.svg",
+          "latitud": null,
+          "longitud": null,
+          "nombre_en": "Plaza Bicentenario",
+          "descripcion_en": "Stop 2 on the Historic Centre route.",
+          "referencia_geografica": "Sector de Chacabuco y Chapito indicado en el folleto.",
+          "precision": "approximate"
+        },
+        {
+          "key": "casa_jorge_montt",
+          "order": 3,
+          "name": "Casa Presidente Jorge Montt",
+          "description": "Una de las casas señaladas en el circuito del Casco Histórico.",
+          "id": "03a56ada-b600-5767-8e6c-f623e353cbb7",
+          "atractivo_id": null,
+          "imagen": "maps/casco-historico.svg",
+          "latitud": null,
+          "longitud": null,
+          "nombre_en": "Casa Presidente Jorge Montt",
+          "descripcion_en": "Stop 3 on the Historic Centre route.",
+          "referencia_geografica": "Referencia del folleto en Chacabuco, sector Yungay.",
+          "precision": "approximate"
+        },
+        {
+          "key": "casa_alejandro_galaz",
+          "order": 4,
+          "name": "Casa Poeta Alejandro Galaz",
+          "description": "Parada del recorrido por las casas del centro de Casablanca.",
+          "id": "31986bdd-b821-5eeb-af44-58ed6186c187",
+          "atractivo_id": null,
+          "imagen": "maps/casco-historico.svg",
+          "latitud": null,
+          "longitud": null,
+          "nombre_en": "Casa Poeta Alejandro Galaz",
+          "descripcion_en": "Stop 4 on the Historic Centre route.",
+          "referencia_geografica": "Referencia del folleto en Chacabuco, entre Portales y Maipú.",
+          "precision": "approximate"
+        },
+        {
+          "key": "almacen_don_lalo",
+          "order": 5,
+          "name": "Almacén Don Lalo",
+          "description": "El almacén forma parte del circuito del Casco Histórico.",
+          "id": "cb6fd8be-d278-5cab-8ef7-3869344e848c",
+          "atractivo_id": null,
+          "imagen": "maps/casco-historico.svg",
+          "latitud": -33.321789,
+          "longitud": -71.4076913,
+          "nombre_en": "Almacén Don Lalo",
+          "descripcion_en": "Stop 5 on the Historic Centre route.",
+          "referencia_geografica": "Almacén tradicional en calle Chacabuco.",
+          "precision": "cartographic"
+        },
+        {
+          "key": "casa_julio_montt",
+          "order": 6,
+          "name": "Casa Julio Montt Salamanca",
+          "description": "Casa señalada entre Almacén Don Lalo y la Cooperativa Agrícola.",
+          "id": "55eaf218-cecf-5708-9554-ea49309a951b",
+          "atractivo_id": null,
+          "imagen": "maps/casco-historico.svg",
+          "latitud": null,
+          "longitud": null,
+          "nombre_en": "Casa Julio Montt Salamanca",
+          "descripcion_en": "Stop 6 on the Historic Centre route.",
+          "referencia_geografica": "Sector de avenida Portales, entre Chacabuco y Membrillar.",
+          "precision": "approximate"
+        },
+        {
+          "key": "cooperativa_agricola",
+          "order": 7,
+          "name": "Cooperativa Agrícola",
+          "description": "Parada previa al paso por la Plaza de Armas.",
+          "id": "5615524f-c114-57ff-8435-798413a6475a",
+          "atractivo_id": null,
+          "imagen": "maps/casco-historico.svg",
+          "latitud": -33.321371,
+          "longitud": -71.4097634,
+          "nombre_en": "Cooperativa Agrícola",
+          "descripcion_en": "Stop 7 on the Historic Centre route.",
+          "referencia_geografica": "Cooperativa Agrícola y Lechera, avenida Diego Portales.",
+          "precision": "cartographic"
+        },
+        {
+          "key": "plaza_armas",
+          "order": 8,
+          "name": "Plaza de Armas",
+          "description": "La plaza central de Casablanca, parte del circuito del Casco Histórico.",
+          "id": "8b027a01-40a8-5418-85d1-700c9a6cc3bb",
+          "atractivo_id": "6ecf2149-2edf-51b4-ae35-dca4d813c0ec",
+          "imagen": "images/plaza.jpg",
+          "latitud": -33.32052365,
+          "longitud": -71.41010835,
+          "nombre_en": "Plaza de Armas",
+          "descripcion_en": "Stop 8 on the Historic Centre route.",
+          "referencia_geografica": "Plaza central, entre Constitución, Portales, Maipú y Óscar Bonilla.",
+          "precision": "cartographic"
+        },
+        {
+          "key": "bomberos",
+          "order": 9,
+          "name": "1.ª Compañía de Bomberos",
+          "description": "El circuito continúa desde la Plaza de Armas hacia la compañía de bomberos.",
+          "id": "68f27757-6989-5f34-97f2-759ed97c18b5",
+          "atractivo_id": null,
+          "imagen": "maps/casco-historico.svg",
+          "latitud": null,
+          "longitud": null,
+          "nombre_en": "1.ª Compañía de Bomberos",
+          "descripcion_en": "Stop 9 on the Historic Centre route.",
+          "referencia_geografica": "Sitio del antiguo cuartel de calle Maipú, frente a la Plaza de Armas.",
+          "precision": "approximate"
+        },
+        {
+          "key": "municipalidad",
+          "order": 10,
+          "name": "I. Municipalidad de Casablanca",
+          "description": "Edificio señalado en el recorrido por la avenida Constitución.",
+          "id": "f1dcc275-90a2-5957-9732-0adcae88b022",
+          "atractivo_id": null,
+          "imagen": "maps/casco-historico.svg",
+          "latitud": -33.3197300133,
+          "longitud": -71.4105246733,
+          "nombre_en": "I. Municipalidad de Casablanca",
+          "descripcion_en": "Stop 10 on the Historic Centre route.",
+          "referencia_geografica": "Edificio consistorial de avenida Constitución 111.",
+          "precision": "cartographic"
+        },
+        {
+          "key": "parroquia_santa_barbara",
+          "order": 11,
+          "name": "Parroquia Santa Bárbara",
+          "description": "La parroquia es la penúltima parada del circuito.",
+          "id": "3f52b10f-1aeb-5c7b-bc9b-cf6cd667a93a",
+          "atractivo_id": "dda20210-be8b-5063-8849-37c8960d451e",
+          "imagen": "images/parroquia.jpg",
+          "latitud": -33.3204394615,
+          "longitud": -71.4108943538,
+          "nombre_en": "Parroquia Santa Bárbara",
+          "descripcion_en": "Stop 11 on the Historic Centre route.",
+          "referencia_geografica": "Parroquia Santa Bárbara, junto a la Plaza de Armas.",
+          "precision": "cartographic"
+        },
+        {
+          "key": "centro_cultural_museo",
+          "order": 12,
+          "name": "Centro Cultural y Museo",
+          "description": "El circuito del Casco Histórico termina en el Centro Cultural y Museo.",
+          "id": "cbef465b-5f47-5115-b70d-34a7d2b4c337",
+          "atractivo_id": "1f682273-6957-5dbf-8f87-adb8c349a333",
+          "imagen": "images/centroCultural.jpg",
+          "latitud": -33.3207206875,
+          "longitud": -71.41119225,
+          "nombre_en": "Centro Cultural y Museo",
+          "descripcion_en": "Stop 12 on the Historic Centre route.",
+          "referencia_geografica": "Centro Cultural y Museo, avenida Diego Portales 02.",
+          "precision": "cartographic"
+        }
+      ]
+    },
+    {
+      "id": "6d4f8a88-a6d3-5567-870c-25359cfc7f6f",
+      "local_id": 3,
+      "nombre": "Plaza de Armas",
+      "descripcion": "Un recorrido por la Plaza de Armas de Casablanca.",
+      "nombre_en": "Main Square",
+      "descripcion_en": "A visit to the main square of Casablanca.",
+      "imagen": "images/plaza.jpg",
+      "paradas": [
+        {
+          "key": "plaza_armas",
+          "order": 1,
+          "name": "Plaza de Armas de Casablanca",
+          "description": "Plaza central de la comuna, punto de encuentro histórico junto a la Parroquia Santa Bárbara.",
+          "id": "8878943e-7d9e-5ec0-a6ec-1db47979149a",
+          "atractivo_id": "6ecf2149-2edf-51b4-ae35-dca4d813c0ec",
+          "imagen": "images/plaza.jpg",
+          "latitud": -33.32052365,
+          "longitud": -71.41010835,
+          "nombre_en": "Plaza de Armas de Casablanca",
+          "descripcion_en": "Stop 1 on the Main Square route."
+        }
+      ]
+    }
+  ]
+}$catalogo$::jsonb;
+    v jsonb; s jsonb; v_insertado uuid;
+    v_atractivos integer := 0; v_rutas integer := 0; v_paradas integer := 0;
+BEGIN
+    PERFORM public.exigir_administrador(p_token);
+    -- Serializa únicamente dos cargas simultáneas de esta población.
+    PERFORM pg_catalog.pg_advisory_xact_lock(20261029, 1);
+    FOR v IN SELECT value FROM pg_catalog.jsonb_array_elements(v_catalogo->'atractivos') LOOP
+        INSERT INTO public.atractivo(id, estado, imagen_principal, ubicacion)
+        VALUES ((v->>'id')::uuid, 'borrador', v->>'imagen',
+            CASE WHEN v->>'latitud' IS NOT NULL THEN public.ST_SetSRID(public.ST_MakePoint(
+                (v->>'longitud')::double precision, (v->>'latitud')::double precision),4326) END)
+        ON CONFLICT (id) DO NOTHING RETURNING id INTO v_insertado;
+        IF v_insertado IS NOT NULL THEN
+            v_atractivos := v_atractivos + 1;
+            INSERT INTO public.atractivo_traduccion(atractivo_id,idioma_codigo,nombre,descripcion)
+            VALUES (v_insertado,'es',v->>'nombre',v->>'descripcion'),
+                   (v_insertado,'en',v->>'nombre_en',v->>'descripcion_en');
+        END IF;
+    END LOOP;
+    FOR v IN SELECT value FROM pg_catalog.jsonb_array_elements(v_catalogo->'rutas') LOOP
+        INSERT INTO public.ruta(id,estado,imagen_principal)
+        VALUES ((v->>'id')::uuid,'borrador',v->>'imagen')
+        ON CONFLICT (id) DO NOTHING RETURNING id INTO v_insertado;
+        IF v_insertado IS NOT NULL THEN
+            v_rutas := v_rutas + 1;
+            INSERT INTO public.ruta_traduccion(ruta_id,idioma_codigo,nombre,descripcion)
+            VALUES (v_insertado,'es',v->>'nombre',v->>'descripcion'),
+                   (v_insertado,'en',v->>'nombre_en',v->>'descripcion_en');
+            -- Una ruta existente conserva sus paradas, incluso si se editaron o eliminaron.
+            FOR s IN SELECT value FROM pg_catalog.jsonb_array_elements(v->'paradas') LOOP
+                INSERT INTO public.ruta_parada(id,ruta_id,atractivo_id,orden,imagen_principal,ubicacion)
+                VALUES ((s->>'id')::uuid,(v->>'id')::uuid,(s->>'atractivo_id')::uuid,
+                    (s->>'order')::integer,s->>'imagen',
+                    CASE WHEN s->>'latitud' IS NOT NULL THEN public.ST_SetSRID(public.ST_MakePoint(
+                        (s->>'longitud')::double precision,(s->>'latitud')::double precision),4326) END);
+                INSERT INTO public.ruta_parada_traduccion(parada_id,idioma_codigo,nombre,descripcion)
+                VALUES ((s->>'id')::uuid,'es',s->>'name',s->>'description'),
+                       ((s->>'id')::uuid,'en',s->>'nombre_en',s->>'descripcion_en');
+                v_paradas := v_paradas + 1;
+            END LOOP;
+        END IF;
+    END LOOP;
+    RETURN pg_catalog.jsonb_build_object('atractivos_creados',v_atractivos,
+        'rutas_creadas',v_rutas,'paradas_creadas',v_paradas);
+END;
+$function$;
+GRANT INSERT (id,estado,imagen_principal,ubicacion) ON public.atractivo TO casablanca_admin_owner;
+GRANT INSERT (id,estado,imagen_principal) ON public.ruta TO casablanca_admin_owner;
+GRANT INSERT (id,ruta_id,atractivo_id,orden,imagen_principal,ubicacion) ON public.ruta_parada TO casablanca_admin_owner;
+REVOKE ALL ON FUNCTION public.admin_cargar_catalogo_inicial(text) FROM PUBLIC;
+GRANT CREATE ON SCHEMA public TO casablanca_admin_owner;
+ALTER FUNCTION public.admin_cargar_catalogo_inicial(text) OWNER TO casablanca_admin_owner;
+REVOKE CREATE ON SCHEMA public FROM casablanca_admin_owner;
+GRANT EXECUTE ON FUNCTION public.admin_cargar_catalogo_inicial(text) TO casablanca_api;
+
+COMMIT;

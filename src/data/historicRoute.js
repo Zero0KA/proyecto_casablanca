@@ -1,3 +1,5 @@
+import { historicLocations } from './historicLocations.js'
+
 // Las posiciones son del dibujo (1100 × 820), nunca latitud/longitud.
 export const historicRoute = {
   key: 'casco_historico',
@@ -21,7 +23,7 @@ export const historicRoute = {
     { key: 'municipalidad', order: 10, name: 'I. Municipalidad de Casablanca', kind: 'Edificio público', symbol: 'civic', position: { x: 430, y: 250 }, description: 'Edificio señalado en el recorrido por la avenida Constitución.' },
     { key: 'parroquia_santa_barbara', order: 11, name: 'Parroquia Santa Bárbara', kind: 'Patrimonio religioso', symbol: 'church', position: { x: 255, y: 247 }, attractionId: 3, description: 'La parroquia es la penúltima parada del circuito.' },
     { key: 'centro_cultural_museo', order: 12, name: 'Centro Cultural y Museo', kind: 'Cultura y patrimonio', symbol: 'museum', position: { x: 115, y: 150 }, attractionId: 5, description: 'El circuito del Casco Histórico termina en el Centro Cultural y Museo.' },
-  ].map(stop => ({ ...stop, databaseId: null, coordinates: null })),
+  ].map(stop => ({ ...stop, databaseId: null, coordinates: historicLocations[stop.key] || null })),
 }
 
 export function historicStopForAttraction(id) {
@@ -30,5 +32,5 @@ export function historicStopForAttraction(id) {
 }
 
 export function historicMapUrl(stopKey) {
-  return stopKey ? `/map?parada=${encodeURIComponent(stopKey)}` : '/map'
+  return stopKey ? `/mapas/casco-historico?parada=${encodeURIComponent(stopKey)}` : '/mapas/casco-historico'
 }

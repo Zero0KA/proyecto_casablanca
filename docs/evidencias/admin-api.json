@@ -1,0 +1,36 @@
+{
+  "at": "2026-10-30T03:07:28.662Z",
+  "database": {
+    "v": "PostgreSQL 16.15 (Ubuntu 16.15-0ubuntu0.24.04.1) on x86_64-pc-linux-gnu, compiled by gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0, 64-bit",
+    "p": "POSTGIS=\"3.4.2 c19ce56\" [EXTENSION] PGSQL=\"160\" GEOS=\"3.12.1-CAPI-1.18.1\" PROJ=\"9.4.0 NETWORK_ENABLED=OFF URL_ENDPOINT= USER_WRITABLE_DIRECTORY=/root/.local/share/proj\" LIBXML=\"2.9.14\" LIBJSON=\"0.17\" LIBPROTOBUF=\"1.4.1\" WAGYU=\"0.5.0 (Internal)\""
+  },
+  "checks": [
+    "Sin sesión: administración rechazada",
+    "Turista: listado y población administrativos rechazados",
+    "Rol API: sin escritura directa ni lectura de tokens",
+    "Carga inicial real: 6 atractivos, 3 rutas, 14 paradas",
+    "Segunda carga: cero duplicados",
+    "Semilla: borradores, duraciones sin inventar y doce paradas de Casco",
+    "Validación: coordenadas, campos extra, UUID, imagen y texto incorrectos rechazados sin altas parciales",
+    "Fallo de asociación al final: se revierte también el atractivo y sus traducciones",
+    "Inyección: nombre malicioso almacenado como dato literal, tablas intactas",
+    "Atractivo: crear, editar, publicar y bloquear borrado mientras está publicado",
+    "Ruta incompleta: publicación rechazada",
+    "Paradas: alta en posición, edición y reordenación sin duplicar posiciones",
+    "Reordenación incompleta o repetida rechazada",
+    "Una URL no permite editar ni borrar una parada de otra ruta",
+    "Ruta completa: publicación autorizada al COMMIT con rol API limitado",
+    "Ruta publicada: borrado propio y de paradas bloqueado",
+    "Recorrido abierto: retiro controlado y protección de su parada original",
+    "Recorrido cerrado: se conserva su paso histórico y se impide borrar la ruta con historial",
+    "Ruta con historial: archivo permitido",
+    "Atractivo asociado a parada: borrado rechazado",
+    "Borrado real de ruta sin historial: elimina paradas, textos y QR sin huérfanos",
+    "Atractivo sin asociaciones: borrado físico y limpieza de traducciones",
+    "Repetir población conserva ediciones",
+    "Transporte público: Bearer admin, denegación turista/origen ajeno y preflight PUT compatibles",
+    "Migración repetible: conserva usuarios, sesiones y contenido",
+    "Categorías: asignación real y limpieza de la asociación al borrar un atractivo",
+    "Concurrencia: una edición espera al bloqueo de la ruta y continúa al liberarlo"
+  ]
+}

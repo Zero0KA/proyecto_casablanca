@@ -16,7 +16,8 @@
 .historic-stop-disc { fill: var(--map-wine); stroke: #fffdf2; stroke-width: 3; }
 .historic-stop-pin text { font: 700 14px 'Segoe UI', system-ui, sans-serif; fill: #fffaf0; pointer-events: none; }
 .historic-stop-pin:hover .historic-stop-halo, .historic-stop-pin:focus-visible .historic-stop-halo, .historic-stop-pin.is-selected .historic-stop-halo { opacity: 1; }
-.historic-stop-pin.is-selected .historic-stop-disc { fill: #4e202f; stroke: #fffdf2; }
+.historic-stop-pin.is-selected .historic-stop-disc { fill: #c02026; stroke: #fffdf2; }
+.historic-stop-pin.is-selected .historic-stop-halo { stroke: #b91d25; stroke-width: 3; }
 .historic-stop-pin:focus-visible .historic-stop-halo { stroke: #1c3d30; stroke-width: 4; }
 .historic-start-label { pointer-events: none; }
 .historic-start-label rect { fill: #762e40; stroke: #fffdf1; stroke-width: 2; }
@@ -62,8 +63,8 @@
 .historic-list-number { width: 23px; height: 23px; border-radius: 50%; background: #edece1; color: #58634f; display: grid; place-items: center; font-size: .7rem; font-weight: 650; }
 .historic-list-arrow { opacity: 0; color: #762e40; }
 .historic-stop-list button:hover { background: #f5f3e8; }
-.historic-stop-list button[aria-current] { background: #f5e9e7; border-color: #ebd9d4; color: #6c2c3d; font-weight: 650; }
-.historic-stop-list button[aria-current] .historic-list-number { background: #762e40; color: #fff; }
+.historic-stop-list button[aria-current] { background: #fff0ec; border-color: #c02026; color: #a11820; font-weight: 650; }
+.historic-stop-list button[aria-current] .historic-list-number { background: #c02026; color: #fff; }
 .historic-stop-list button[aria-current] .historic-list-arrow, .historic-stop-list button:hover .historic-list-arrow { opacity: 1; }
 .historic-route-footer { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; padding: 20px 24px; border-top: 1px solid #dedfcd; background: #faf9f2; }
 .historic-route-footer > span { display: flex; align-items: baseline; gap: 18px; flex-wrap: wrap; }

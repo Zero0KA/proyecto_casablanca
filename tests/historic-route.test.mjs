@@ -20,7 +20,9 @@ test('El catálogo conserva las doce paradas del folleto, con orden e identifica
   assert.equal(historicRoute.stops[0].name, 'El Control')
   assert.equal(historicRoute.stops[11].name, 'Centro Cultural y Museo')
   for (const stop of historicRoute.stops) {
-    assert.equal(stop.coordinates, null)
+    assert.ok(Number.isFinite(stop.coordinates.latitude) && Math.abs(stop.coordinates.latitude) <= 90)
+    assert.ok(Number.isFinite(stop.coordinates.longitude) && Math.abs(stop.coordinates.longitude) <= 180)
+    assert.ok(['cartographic','approximate'].includes(stop.coordinates.accuracy))
     assert.equal(stop.databaseId, null)
     assert.ok(Number.isFinite(stop.position.x) && stop.position.x > 0 && stop.position.x < historicRoute.illustration.width)
     assert.ok(Number.isFinite(stop.position.y) && stop.position.y > 0 && stop.position.y < historicRoute.illustration.height)

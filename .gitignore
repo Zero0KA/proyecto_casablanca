@@ -47,3 +47,9 @@ dist/
 
 # Copias locales del mapa ilustrado
 .respaldo-casco-historico/
+
+# Copias locales de la administración de contenido
+.respaldo-admin-contenidos/
+
+# Salida local de pruebas de integración
+tests/resultado-api.json

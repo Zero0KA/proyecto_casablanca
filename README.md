@@ -1,9 +1,9 @@
 # Casablanca
 
-Prototipo integrado: frontend React/Vite, backend Node/Express y PostgreSQL/PostGIS.
+Aplicación integrada: React/Vite, Node/Express y PostgreSQL/PostGIS.
 
-Consulta **LEEME_INTEGRACION.md** para instalarlo en una carpeta nueva, conservar tu `.env` privado, iniciar la demostración y probar visitantes, turistas y administradores.
+**Actualización del 30/10/2026:** administración de atractivos, rutas y paradas con BD real; carga inicial por acción del administrador; borrado protegido; y Mapas interactivos con el circuito del Casco Histórico en vista ilustrada y geográfica.
 
-El diseño público viene de la versión de Jack_elDes. Registro, login, sesiones, perfil, CRUD de categorías y gestión de cuentas usan nuestro backend. El catálogo de presentación y el circuito ilustrado se sirven con el frontend.
+Consulta [LEEME_INTEGRACION.md](LEEME_INTEGRACION.md) para ejecutar el proyecto. Antes de usar los paneles nuevos en la BD existente, sigue [docs/ADMIN_CONTENIDOS.md](docs/ADMIN_CONTENIDOS.md) y ejecuta `bd/actualizar_bd_contenidos.sql`. El instalador completo actualizado se reserva para una base vacía.
 
-El mapa del **Casco Histórico** incorpora las doce paradas del folleto, selección, zoom y desplazamiento. Consulta [docs/MAPA_CASCO_HISTORICO.md](docs/MAPA_CASCO_HISTORICO.md) para conocer su estructura, pruebas, límites y adaptación a la API/PostgreSQL. Esas notas técnicas se mantienen en la documentación.
+El catálogo público de presentación todavía usa datos locales; su unificación completa con BD queda para una etapa posterior. El panel administrativo sí guarda en PostgreSQL. Fuentes y precisión del mapa: [docs/UBICACIONES_CASCO_HISTORICO.md](docs/UBICACIONES_CASCO_HISTORICO.md). Pruebas y resultados: [docs/RESULTADOS_ADMIN_CONTENIDOS.md](docs/RESULTADOS_ADMIN_CONTENIDOS.md).

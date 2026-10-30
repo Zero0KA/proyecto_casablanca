@@ -1,0 +1,7 @@
+{
+  "fecha": "2026-10-30",
+  "casos": 17,
+  "correctos": 17,
+  "diferencias": 0,
+  "limpieza": "ROLLBACK confirmado; conteos iniciales/finales iguales"
+}

@@ -1,78 +1,57 @@
-# Casablanca integrado — diseño y funciones reales
+# Casablanca integrado
 
-**Actualización del mapa (29/10/2026):** el Casco Histórico ya tiene su circuito ilustrado de doce paradas y una vista geográfica separada. El funcionamiento, los límites y la conexión futura a BD se detallan en [docs/MAPA_CASCO_HISTORICO.md](docs/MAPA_CASCO_HISTORICO.md). Se conserva la instalación existente; aplicar el mapa no requiere repetirla.
+Actualización: 30/10/2026. Frontend React/Vite, API Node/Express y PostgreSQL/PostGIS. Se conserva el diseño de la página y se incorpora administración real de atractivos, rutas y paradas.
 
-## Instalación sin perder tu versión funcional
+## Esta actualización
 
-1. Extraer el ZIP en una carpeta NUEVA. No reemplazar ni borrar todavía tu proyecto anterior.
-2. Copiar PRIVADAMENTE `backend/.env` desde tu proyecto actual a `backend/.env` del integrado. No enviarlo ni subirlo a GitHub. `.env.example` contiene solo placeholders: no reemplazar tu configuración por esos textos.
-3. En PowerShell, entrar en la raíz de la nueva carpeta y ejecutar `npm.cmd ci`. Después entrar en backend y ejecutar `npm.cmd ci`. Esto instala las dependencias del PC desde los lockfiles incluidos.
-4. Detener FRONT y API de las versiones anteriores con Ctrl+C. Importante: si dejas una API antigua en 3001, el lanzador puede reutilizarla y no tendrá los nuevos endpoints de rutas y perfil.
-5. Hacer doble clic en `iniciar-demo.cmd` del proyecto integrado. Abrirá los servicios y la dirección del navegador.
-6. El lanzador abre Inicio. A partir de ahora puedes navegar con los botones de la página.
+Antes de usar los paneles nuevos, aplicar **una vez** `bd/actualizar_bd_contenidos.sql` sobre la BD existente como postgres. El procedimiento completo está en [docs/ADMIN_CONTENIDOS.md](docs/ADMIN_CONTENIDOS.md). No reinstalar ni borrar casablanca. `bd/casablanca_instalador_actualizado.sql` es únicamente para instalaciones futuras en una base vacía.
 
-La BD que ya tienes se conserva. NO repetir el instalador, `01_login_y_bloqueo.sql` ni la preparación de cuentas: ya confirmaste que ambos cambios fueron aplicados. No cambiar contraseñas para instalar esta integración.
+El aplicador conserva respaldos y no cambia `.env`, cuentas, contraseñas ni sesiones. No hace commit, push ni abre el túnel. No agrega dependencias. Los resultados y límites comprobados están en [docs/RESULTADOS_ADMIN_CONTENIDOS.md](docs/RESULTADOS_ADMIN_CONTENIDOS.md).
 
-Puedes nombrar la carpeta nueva `casablanca_integrado` y moverla donde quieras: el lanzador obtiene su propia carpeta. No incluye tus credenciales, node_modules ni dist. Para restaurar la versión anterior, cerrar estos servicios y ejecutar el lanzador de aquella carpeta.
+## Ejecutar y desarrollar
 
-## Menús según la cuenta
+- Carpeta activa: `casablanca_publicacion`. Conservar el respaldo anterior y el respaldo PostgreSQL por separado.
+- Dependencias, si se instala una copia nueva: `npm.cmd ci` en la raíz y `npm.cmd ci` en backend. Copiar PRIVADAMENTE el `backend/.env` vigente; no reemplazarlo por valores de ejemplo ni subirlo a GitHub.
+- Detener las APIs antiguas con Ctrl+C antes de iniciar la nueva. Una API vieja que ocupe 3001 puede responder sin tener las funciones nuevas.
+- Para revisar cambios locales, usar **`iniciar-demo.cmd`**. Abrir la dirección exacta de Vite; suele ser `http://localhost:5173/proyecto_casablanca/`, pero puede cambiar de puerto si está ocupado.
+- Si se trabaja con terminales manuales, conservar la estructura **FRONT**, **API** y **COMANDOS**. FRONT mantiene Vite; API mantiene Node; COMANDOS ejecuta pruebas y Git. No cerrar API para enviar una petición desde la misma terminal.
+- Verificar: `npm.cmd run build`, `npm.cmd run lint`, `node --test tests/*.test.mjs`.
+- Publicar es un paso separado: revisar cambios, hacer commit y push con el procedimiento acordado. `iniciar-publicacion.cmd` conserva su mecanismo de API, túnel y actualización de conexión; exige preparar el repositorio antes de iniciarlo.
 
-- Visitante: Inicio, Mapa, Rutas, Atractivos e Iniciar sesión. El registro se abre desde el formulario de acceso.
-- Turista: contenido público, Mi cuenta y Cerrar sesión. No aparece Administración.
-- Admin: lo anterior más Administración; dentro se accede a Categorías y Usuarios.
-- Las direcciones administrativas siguen protegidas aunque alguien las escriba. El backend y la BD también comprueban los permisos.
+No dejar una copia anterior ejecutándose a la vez en los mismos puertos. Los avisos de bloqueo del lanzador y los límites de los túneles no se modificaron en este paquete.
 
-Las dos cuentas y contraseñas de prueba son las que ya preparaste. El registro normal sigue pendiente hasta verificar el correo; no se activa automáticamente.
+## Acceso y cuentas
 
-## Rutas y datos de demostración
+- Visitante: contenido público, mapas, atractivos, rutas e inicio de sesión. No puede iniciar un recorrido real sin cuenta habilitada.
+- Turista: lo anterior, Mi cuenta, su perfil y sus recorridos. No aparece Administración; escribir su URL también está protegido.
+- Admin: lo anterior más Categorías, Usuarios, Atractivos y Rutas/Paradas dentro de Administración.
 
-Se incorporaron endpoints que usan las funciones YA EXISTENTES de la BD:
+El backend y las funciones SQL comprueban permisos en cada operación. La interfaz no concede permisos por ocultar o mostrar botones. El registro normal crea una cuenta pendiente. No se envían correos todavía; la habilitación manual conserva su configuración opcional de demostración y no prueba que la persona sea dueña del correo. No se habilitan cuentas automáticamente al aplicar esta actualización.
 
-- GET `/api/rutas`: rutas publicadas, sin sesión.
-- GET `/api/rutas/:id`: detalle y paradas publicadas, sin sesión.
-- POST `/api/rutas/:id/recorridos`: inicia el recorrido para el usuario de la cookie; exige sesión válida.
-- GET `/api/perfil`: perfil propio.
-- GET `/api/recorridos`: historial propio, paginado.
-- POST `/api/recorridos/:id/abandonar`: abandona un recorrido propio, conservando historial.
+Para probar admin y turista simultáneamente usar perfiles separados o incógnito. Mantener el mismo host durante una prueba local: la cookie de localhost no es la de 127.0.0.1.
 
-Al solicitar iniciar una ruta sin sesión, se pide login y se regresa a la misma ruta. No se crea nada automáticamente al volver: la persona pulsa Confirmar inicio del recorrido. Una ruta ya abierta produce un conflicto y se puede consultar desde Mi cuenta.
+## Datos administrados y catálogo de presentación
 
-Además de las rutas publicadas en la BD, se conserva el catálogo local de tres recorridos. El Casco Histórico tiene las doce paradas del folleto. Sus IDs numéricos no se convierten en UUID ni se inventa un inicio exitoso.
+Registro, login, sesiones, perfil, cuentas, categorías y los nuevos paneles de contenido usan PostgreSQL real. La carga inicial se solicita desde el panel: seis atractivos, tres rutas y catorce paradas, como borradores, conservando ediciones existentes. No se carga al instalar las funciones.
 
-Para mostrar una ruta REAL en la demo, puedes ejecutar **opcionalmente** `bd/poblacion_ruta_demo.sql` en pgAdmin sobre casablanca con tu conexión administrativa. Crea una ruta publicada DEMO con tres paradas y traducciones en es/en usando las funciones administrativas. No cambia tablas, funciones, roles ni contraseñas; repetirlo no vuelve a crear la ruta. El contenido no es un itinerario oficial ni validado por la municipalidad. Después recargar Rutas.
+Las rutas reales publicadas se consultan con `GET /api/rutas` y `GET /api/rutas/:uuid`; el turista inicia su propio recorrido mediante `POST /api/rutas/:uuid/recorridos`. Volver del login no inicia un recorrido automáticamente: se requiere confirmar. El historial se consulta desde Mi cuenta y abandonar lo cierra sin borrarlo.
 
-El inicio guarda datos REALES: aparecen en el historial. Abandonar conserva esos registros. No se proporciona un borrado en cascada para limpiar rutas con historial; las protecciones de la BD permanecen. El SQL opcional no debe incorporarse al instalador como datos obligatorios.
+El Inicio, las fichas numéricas de atractivos, las tres rutas del catálogo local y el mapa de presentación **siguen leyendo sus datos locales**. Sus IDs numéricos/claves no son UUID de PostgreSQL. Editar un registro de BD no modifica automáticamente esas vistas; unificar el catálogo público completo quedó fuera de esta entrega. Las rutas reales publicadas sí se agregan al listado público existente.
 
-No se integró registrar pasos por QR ni completar recorridos. El mapa ahora ofrece el circuito ilustrado del Casco Histórico y conserva la vista Leaflet de Biblioteca. Los atractivos públicos siguen usando el catálogo de presentación; sus límites están documentados y no se presentan como mensajes técnicos dentro de la página.
+El antiguo `bd/poblacion_ruta_demo.sql` es opcional y crea otra ruta DEMO publicada. No hace falta ejecutarlo para esta carga inicial. Los recorridos reales que se inicien dejan historial; una ruta con historial se archiva y no se elimina.
 
-## Qué se conservó y qué cambió
+## Mapas
 
-Se conservan su portada, fotografías, colores, tarjetas, menú móvil y pie de página. Se conserva nuestro backend, registro, Argon2id, login, cookies, funciones administrativas, categorías, bloqueo y lanzadores. Su backend alternativo no se incluye.
+Abrir `#/mapas` para consultar **Mapas interactivos** y entrar al Casco Histórico. Tiene vista ilustrada y geográfica con doce paradas. Seleccionar una parada la destaca en rojo y mantiene su selección al cambiar de vista. Los enlaces antiguos `#/map` redirigen al circuito.
 
-Cambios compartidos: App/menú/session context, perfil y rutas; estilos coherentes para login, registro y administración. El proxy de Vite se conserva apuntando a 3001. La eliminación de categorías ahora envía JSON y deja de ser rechazada por la protección de origen. Se separó el contexto/hooks de sesiones para resolver el error de lint. Se retiró la referencia a una fuente ausente; permanece la selección local y las fuentes alternativas.
+La ilustración es del circuito, no un mapa general ni un plano a escala. La geografía distingue siete referencias cartográficas y cinco aproximaciones. Las aproximaciones no se cargan como GPS confirmado en BD. Las fuentes y validaciones pendientes están en [docs/UBICACIONES_CASCO_HISTORICO.md](docs/UBICACIONES_CASCO_HISTORICO.md); su estructura y adaptador a BD en [docs/MAPA_CASCO_HISTORICO.md](docs/MAPA_CASCO_HISTORICO.md).
 
-Las fotografías grandes se conservan como fueron entregadas. La optimización de imágenes y la conexión del catálogo completo a BD quedan para una etapa posterior. El backend alternativo no se ejecuta y su `.env` no se copia.
+No se añadió navegación GPS, ubicación del visitante, acreditación QR, descarga offline ni sincronización. La ilustración se mantiene manualmente cuando cambie el circuito. Las imágenes existentes se conservan; la subida de imágenes queda para después.
 
-No se modificó la BD ni se ejecutó SQL contra ella desde este entorno. Los cambios permanentes del login y del borrado administrativo que aplicaste antes deben seguir en tu instalador actualizado; esta integración no añade funciones SQL nuevas.
+## Publicación y recuperación
 
-## Prueba recomendada en tu PC
+GitHub Pages aloja el frontend estático; no ejecuta Node ni PostgreSQL. Durante la presentación el navegador consulta la API del PC mediante HTTPS y cloudflared. API, túnel, PostgreSQL y PC deben permanecer activos. La parte estática puede seguir abriendo con el backend apagado; las operaciones de cuenta y BD necesitan la conexión.
 
-1. Sin sesión: recorrer Inicio/Atractivos/Mapa/Rutas y abrir Iniciar sesión; desde allí se accede al registro.
-2. Turista: login, Mi cuenta con datos reales; sin enlace Administración. URL directa administrativa denegada.
-3. Admin: Administración → Categorías; crear, cambiar icono y eliminar. Administración → Usuarios; listar y bloquear/desbloquear una cuenta turista.
-4. Si creaste la ruta opcional: cerrar sesión, abrir Rutas → Iniciar recorrido; login turista → volver a esa ruta → Confirmar inicio → Ver mis recorridos. Abandonar para cerrar el intento antes de iniciarlo nuevamente.
-5. Cerrar sesión y comprobar que se retira el acceso administrativo y privado.
+Se conserva `demoTransport`, la cookie de sesión local y el Bearer en publicación. Una edición de código requiere publicarla mediante Git para llegar a Pages. Una edición de datos en BD no necesita recompilar el frontend que ya consulta ese dato; el catálogo local sí requiere cambiar su archivo y publicarlo.
 
-Para probar admin y turista simultáneamente usar perfiles separados/incógnito. Mantener el mismo host (localhost o 127.0.0.1) durante una prueba, porque la cookie pertenece al host.
-
-## Comprobaciones ya realizadas y límites
-
-- npm run build y npm run lint: correctos sin errores/advertencias del código.
-- Pruebas HTTP de registro, Argon2 y sesiones con Express real y BD simulada: correctas.
-- Pruebas de endpoints de rutas, ausencia de sesión, UUID inválido, sesión bloqueada y recorrido duplicado: correctas con BD simulada.
-- Prueba DOM con React/JSDOM y API simulada: navegación pública, redirección login, vuelta a ruta, inicio explícito, perfil, rechazo turista, menú admin y creación/eliminación de categorías correctos.
-- SQL de población: sintaxis SQL/PLpgSQL analizada; no ejecutado contra PostgreSQL en este entorno.
-
-Las pruebas anteriores corresponden a la integración inicial. La actualización del mapa se revisa en Chromium con API simulada y sus resultados se registran en la documentación del mapa. No se accedió al PostgreSQL de tu PC; las pruebas con tu BD real se mantienen como comprobación local.
-
-GitHub Pages publica el frontend estático. El procedimiento del túnel permite que consulte la API local durante las presentaciones; no aloja Node ni PostgreSQL. Para desarrollar el mapa se usa la demostración local como antes. La actualización del mapa no ejecuta el lanzador de publicación ni hace commit o push.
+Para restaurar código, cerrar servicios y abrir el respaldo anterior. Restaurar datos editados requiere el respaldo PostgreSQL; un respaldo de la carpeta del proyecto no contiene la BD. No borrar respaldos antes de validar la entrega en el PC.

@@ -16,5 +16,6 @@ export function publicImage(value) {
   if (value.startsWith('/images/')) return import.meta.env.BASE_URL + value.slice(1)
   if (value.startsWith(import.meta.env.BASE_URL) && !value.startsWith('//')) return value
   if (value.startsWith('images/')) return import.meta.env.BASE_URL + value
+  if (value === 'maps/casco-historico.svg') return import.meta.env.BASE_URL + value
   return null
 }
