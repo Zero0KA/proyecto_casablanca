@@ -53,3 +53,5 @@ dist/
 
 # Salida local de pruebas de integración
 tests/resultado-api.json
+tests/resultado-catalogo.json
+.respaldo-catalogo/

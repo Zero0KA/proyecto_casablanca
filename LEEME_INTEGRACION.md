@@ -1,57 +1,59 @@
-# Casablanca integrado
+# Ejecución de Casablanca
 
-Actualización: 30/10/2026. Frontend React/Vite, API Node/Express y PostgreSQL/PostGIS. Se conserva el diseño de la página y se incorpora administración real de atractivos, rutas y paradas.
+Actualización del 19/11/2026. La carpeta de trabajo es `casablanca_publicacion`. El frontend sigue en React/Vite y GitHub Pages; la API Node/Express y PostgreSQL/PostGIS siguen en el PC durante las presentaciones.
 
-## Esta actualización
+## Requisitos y configuración privada
 
-Antes de usar los paneles nuevos, aplicar **una vez** `bd/actualizar_bd_contenidos.sql` sobre la BD existente como postgres. El procedimiento completo está en [docs/ADMIN_CONTENIDOS.md](docs/ADMIN_CONTENIDOS.md). No reinstalar ni borrar casablanca. `bd/casablanca_instalador_actualizado.sql` es únicamente para instalaciones futuras en una base vacía.
+Se mantienen Node.js, PostgreSQL/PostGIS, Git, GitHub CLI y cloudflared. La conexión vigente sigue en `backend/.env`; conservarla de forma privada. No copiarla a `public/`, no subirla a GitHub ni reemplazarla al aplicar un parche. El proyecto no incluye la BD dentro de su carpeta.
 
-El aplicador conserva respaldos y no cambia `.env`, cuentas, contraseñas ni sesiones. No hace commit, push ni abre el túnel. No agrega dependencias. Los resultados y límites comprobados están en [docs/RESULTADOS_ADMIN_CONTENIDOS.md](docs/RESULTADOS_ADMIN_CONTENIDOS.md).
+En una copia nueva se instalan las dependencias con `npm.cmd ci` en la raíz y `npm.cmd ci` dentro de backend. Esta entrega no añade dependencias ni cambia los archivos package-lock. La ampliación administrativa anterior debe estar instalada en la BD; no ejecutar el instalador completo sobre la BD existente.
 
-## Ejecutar y desarrollar
+## Comprobar y arrancar localmente
 
-- Carpeta activa: `casablanca_publicacion`. Conservar el respaldo anterior y el respaldo PostgreSQL por separado.
-- Dependencias, si se instala una copia nueva: `npm.cmd ci` en la raíz y `npm.cmd ci` en backend. Copiar PRIVADAMENTE el `backend/.env` vigente; no reemplazarlo por valores de ejemplo ni subirlo a GitHub.
-- Detener las APIs antiguas con Ctrl+C antes de iniciar la nueva. Una API vieja que ocupe 3001 puede responder sin tener las funciones nuevas.
-- Para revisar cambios locales, usar **`iniciar-demo.cmd`**. Abrir la dirección exacta de Vite; suele ser `http://localhost:5173/proyecto_casablanca/`, pero puede cambiar de puerto si está ocupado.
-- Si se trabaja con terminales manuales, conservar la estructura **FRONT**, **API** y **COMANDOS**. FRONT mantiene Vite; API mantiene Node; COMANDOS ejecuta pruebas y Git. No cerrar API para enviar una petición desde la misma terminal.
-- Verificar: `npm.cmd run build`, `npm.cmd run lint`, `node --test tests/*.test.mjs`.
-- Publicar es un paso separado: revisar cambios, hacer commit y push con el procedimiento acordado. `iniciar-publicacion.cmd` conserva su mecanismo de API, túnel y actualización de conexión; exige preparar el repositorio antes de iniciarlo.
+1. Detener el lanzador público y las APIs anteriores con Ctrl+C. Mantener PostgreSQL activo.
+2. Ejecutar `verificar-proyecto.cmd` desde la raíz. Ejecuta lint, pruebas de código y compilación; se detiene si falla un paso. No realiza escrituras en PostgreSQL.
+3. Ejecutar `iniciar-demo.cmd`. Abre API, FRONT y la ventana COMANDOS con la estructura habitual. Mantener API y FRONT abiertas.
 
-No dejar una copia anterior ejecutándose a la vez en los mismos puertos. Los avisos de bloqueo del lanzador y los límites de los túneles no se modificaron en este paquete.
+El arranque local consulta `/api/salud` y comprueba el catálogo a través del proxy de Vite. Ya no llama automáticamente a `renovar-demo.cjs`, no necesita `DEMO_ADMIN_TOKEN` y no crea sesiones. Cada persona inicia sesión desde la web. El diagnóstico histórico `/api/estado` y el renovador se conservan para uso manual, pero no autorizan este catálogo ni sus paneles.
 
-## Acceso y cuentas
+La dirección local conserva `/proyecto_casablanca/` y el puerto que muestre Vite. El lanzador elige uno libre entre 5173 y 5193. La API utiliza 3001. Para comandos manuales: FRONT ejecuta Vite, API ejecuta Node en backend y COMANDOS recibe pruebas/Git. No detener API para enviar una petición desde esa misma terminal.
 
-- Visitante: contenido público, mapas, atractivos, rutas e inicio de sesión. No puede iniciar un recorrido real sin cuenta habilitada.
-- Turista: lo anterior, Mi cuenta, su perfil y sus recorridos. No aparece Administración; escribir su URL también está protegido.
-- Admin: lo anterior más Categorías, Usuarios, Atractivos y Rutas/Paradas dentro de Administración.
+## Contenido y cuentas
 
-El backend y las funciones SQL comprueban permisos en cada operación. La interfaz no concede permisos por ocultar o mostrar botones. El registro normal crea una cuenta pendiente. No se envían correos todavía; la habilitación manual conserva su configuración opcional de demostración y no prueba que la persona sea dueña del correo. No se habilitan cuentas automáticamente al aplicar esta actualización.
+Un visitante puede consultar contenido publicado. Una cuenta habilitada puede iniciar su propio recorrido, consultarlo y abandonarlo. El administrador conserva esas funciones y administra cuentas, categorías, atractivos, rutas y paradas. El rol se comprueba en el servidor y en las funciones SQL; un parámetro de URL no otorga permisos.
 
-Para probar admin y turista simultáneamente usar perfiles separados o incógnito. Mantener el mismo host durante una prueba local: la cookie de localhost no es la de 127.0.0.1.
+El registro sigue creando cuentas pendientes. La habilitación manual mantiene su configuración opcional; no comprueba la propiedad real del correo. No se crean cuentas ni se cambian contraseñas al aplicar esta entrega.
 
-## Datos administrados y catálogo de presentación
+La carga inicial continúa siendo una acción confirmada del administrador. Incorpora seis atractivos, tres rutas y catorce paradas como borradores. Conserva las ediciones existentes. No se ejecuta al abrir el sitio ni al aplicar el ZIP.
 
-Registro, login, sesiones, perfil, cuentas, categorías y los nuevos paneles de contenido usan PostgreSQL real. La carga inicial se solicita desde el panel: seis atractivos, tres rutas y catorce paradas, como borradores, conservando ediciones existentes. No se carga al instalar las funciones.
+**Si no aparecen rutas al visitante, revisar su estado en Administración.** Vista previa permite comprobar borradores desde la cuenta administradora. Para hacerlos públicos se completan los requisitos existentes y se pulsa Publicar. El Teatro de la semilla no tiene GPS; las rutas iniciales no tienen duración definida. No se rellenan automáticamente datos desconocidos para forzar la publicación.
 
-Las rutas reales publicadas se consultan con `GET /api/rutas` y `GET /api/rutas/:uuid`; el turista inicia su propio recorrido mediante `POST /api/rutas/:uuid/recorridos`. Volver del login no inicia un recorrido automáticamente: se requiere confirmar. El historial se consulta desde Mi cuenta y abandonar lo cierra sin borrarlo.
-
-El Inicio, las fichas numéricas de atractivos, las tres rutas del catálogo local y el mapa de presentación **siguen leyendo sus datos locales**. Sus IDs numéricos/claves no son UUID de PostgreSQL. Editar un registro de BD no modifica automáticamente esas vistas; unificar el catálogo público completo quedó fuera de esta entrega. Las rutas reales publicadas sí se agregan al listado público existente.
-
-El antiguo `bd/poblacion_ruta_demo.sql` es opcional y crea otra ruta DEMO publicada. No hace falta ejecutarlo para esta carga inicial. Los recorridos reales que se inicien dejan historial; una ruta con historial se archiva y no se elimina.
+Las ediciones de BD se reflejan al entrar o volver a la pantalla, recargar o recuperar el foco de la pestaña. No requieren recompilar ni subir el código. No hay actualización mediante WebSocket ni funcionamiento offline persistente.
 
 ## Mapas
 
-Abrir `#/mapas` para consultar **Mapas interactivos** y entrar al Casco Histórico. Tiene vista ilustrada y geográfica con doce paradas. Seleccionar una parada la destaca en rojo y mantiene su selección al cambiar de vista. Los enlaces antiguos `#/map` redirigen al circuito.
+`#/mapas` lista las rutas disponibles y abre su mapa geográfico. El Casco Histórico conserva su ilustración cuando coinciden sus doce UUID y su orden. Las fichas y mapas leen textos, asociaciones y coordenadas de BD. Si una parada carece de GPS, permanece en la lista, sin marcador inventado.
 
-La ilustración es del circuito, no un mapa general ni un plano a escala. La geografía distingue siete referencias cartográficas y cinco aproximaciones. Las aproximaciones no se cargan como GPS confirmado en BD. Las fuentes y validaciones pendientes están en [docs/UBICACIONES_CASCO_HISTORICO.md](docs/UBICACIONES_CASCO_HISTORICO.md); su estructura y adaptador a BD en [docs/MAPA_CASCO_HISTORICO.md](docs/MAPA_CASCO_HISTORICO.md).
+Reordenar, añadir, eliminar o recrear una parada puede invalidar la correspondencia del dibujo. En ese caso se ofrece el mapa geográfico y la lista real; revisar manualmente la ilustración y sus asociaciones antes de habilitarla de nuevo. No se genera una ilustración automática ni una línea de navegación GPS.
 
-No se añadió navegación GPS, ubicación del visitante, acreditación QR, descarga offline ni sincronización. La ilustración se mantiene manualmente cuando cambie el circuito. Las imágenes existentes se conservan; la subida de imágenes queda para después.
+Las direcciones anteriores de fichas numéricas y `routes/catalogo/1`, `2`, `3` resuelven los UUID originales. Si ese registro ya no existe o no está publicado, no se reconstruye una copia local. `#/map?lugar=4` abre la Biblioteca por su UUID y sus coordenadas actuales.
 
-## Publicación y recuperación
+## Publicación mediante GitHub Pages
 
-GitHub Pages aloja el frontend estático; no ejecuta Node ni PostgreSQL. Durante la presentación el navegador consulta la API del PC mediante HTTPS y cloudflared. API, túnel, PostgreSQL y PC deben permanecer activos. La parte estática puede seguir abriendo con el backend apagado; las operaciones de cuenta y BD necesitan la conexión.
+Primero probar localmente. Después, en COMANDOS, revisar `git status --short`, preparar los archivos del proyecto, hacer commit y `git push origin main`. La configuración privada, los respaldos y las salidas locales de pruebas están excluidos. Comprobar los archivos preparados antes de confirmar.
 
-Se conserva `demoTransport`, la cookie de sesión local y el Bearer en publicación. Una edición de código requiere publicarla mediante Git para llegar a Pages. Una edición de datos en BD no necesita recompilar el frontend que ya consulta ese dato; el catálogo local sí requiere cambiar su archivo y publicarlo.
+`iniciar-publicacion.cmd` exige rama main, ausencia de cambios sin guardar y coincidencia con origin/main. Inicia API y túnel, actualiza solo la conexión pública de `public/demo-api.json`, hace su commit/push y espera Pages. No publica automáticamente los demás archivos. Conservar PC, PostgreSQL, API, Internet y túnel activos; Ctrl+C detiene la presentación.
 
-Para restaurar código, cerrar servicios y abrir el respaldo anterior. Restaurar datos editados requiere el respaldo PostgreSQL; un respaldo de la carpeta del proyecto no contiene la BD. No borrar respaldos antes de validar la entrega en el PC.
+El bloqueo del lanzador ahora comprueba PID e identidad de arranque; reconoce archivos huérfanos y no termina otros programas. En Windows usa información de procesos mediante PowerShell. Si una instancia real sigue activa, la respeta.
+
+El workflow fija Ubuntu 24.04, Node 24 y acciones oficiales identificadas por commit. Ejecuta lint, pruebas y build antes de desplegar `dist`. No instala PostgreSQL en Pages ni publica el backend como servicio. La actualización del workflow no garantiza eliminar demoras o incidencias externas de Actions.
+
+## Restauración y límites
+
+El aplicador deja copias en `.respaldo-catalogo/<fecha>/`. El respaldo de código y el respaldo PostgreSQL son distintos. Restaurar archivos no revierte datos editados desde la web. La BD actual se conserva y no se ejecuta SQL nuevo por este cambio.
+
+Las operaciones administrativas compuestas mantienen transacciones y controles de historial. Una ruta con recorridos se archiva; no se borra para reiniciarla. El contenido público no contiene cuentas ni secretos de sesión.
+
+El sitio sigue necesitando correo real y recuperación de contraseña, subida de imágenes, validación de coordenadas y contenido, flujo QR completo en la interfaz, offline/sincronización, pruebas móviles e integrales adicionales, carga y operación permanente según alcance. El mapa visible o una consulta sin conexión no acreditan una visita.
+
+Procedimiento y pruebas detallados: [CATALOGO_CONECTADO.md](docs/CATALOGO_CONECTADO.md) y [RESULTADOS_CATALOGO_CONECTADO.md](docs/RESULTADOS_CATALOGO_CONECTADO.md).

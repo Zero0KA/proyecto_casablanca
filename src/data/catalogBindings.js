@@ -1,4 +1,17 @@
-// Identidades de la carga inicial. No activan la lectura pública desde BD.
+// Compatibilidad de enlaces anteriores. La identidad nunca se deduce del nombre.
+export const attractionAliases = {
+  1: '79e650f2-a038-5ac3-90b4-fe77e5a8fd6d',
+  2: '6ecf2149-2edf-51b4-ae35-dca4d813c0ec',
+  3: 'dda20210-be8b-5063-8849-37c8960d451e',
+  4: '0836ef48-946b-5958-b4bc-76b3fa99d611',
+  5: '1f682273-6957-5dbf-8f87-adb8c349a333',
+  6: '59ef1d81-6c45-5bc5-a20e-0c0be94944d6',
+}
+export const routeAliases = {
+  1: '2a92f1d8-b3af-5b37-9d19-2c9ec57f5088',
+  2: 'b6875fb0-5938-5ea5-9644-53c7fe5114dc',
+  3: '6d4f8a88-a6d3-5567-870c-25359cfc7f6f',
+}
 export const historicDatabaseRouteId = 'b6875fb0-5938-5ea5-9644-53c7fe5114dc'
 export const historicStopBindings = {
   "c8fdc6d6-3131-532b-a94c-f2d47f3d6908": "el_control",

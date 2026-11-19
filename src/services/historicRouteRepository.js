@@ -1,4 +1,5 @@
 import { historicRoute } from '../data/historicRoute.js'
+import { historicDatabaseRouteId, historicStopBindings } from '../data/catalogBindings.js'
 
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
@@ -42,4 +43,7 @@ export function createApiHistoricRouteRepository({ routeId, stopBindings, fetchR
 }
 
 // Único punto de sustitución para conectar esta vista y la ficha del circuito.
-export const historicRouteRepository = createLocalHistoricRouteRepository()
+export const historicRouteRepository = createApiHistoricRouteRepository({
+  routeId: historicDatabaseRouteId, stopBindings: historicStopBindings,
+  fetchRoute: async (path, options) => { const { apiFetch } = await import('../components/SessionContext.js'); return apiFetch(path, options) },
+})

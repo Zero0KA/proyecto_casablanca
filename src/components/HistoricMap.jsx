@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import './HistoricMap.css'
+import { withPreview } from '../services/catalogModel.js'
 
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value))
 
@@ -23,7 +24,7 @@ function constrainBox(box, width, height) {
   return { ...box, x: clamp(box.x, -width * .08, width - box.width + width * .08), y: clamp(box.y, -height * .08, height - box.height + height * .08) }
 }
 
-export default function HistoricMap({ route, selectedKey, onSelect }) {
+export default function HistoricMap({ route, selectedKey, onSelect, preview = false }) {
   const { width, height, image } = route.illustration
   const [box, setBox] = useState({ x: 0, y: 0, width, height })
   const [showPath, setShowPath] = useState(true)
@@ -123,9 +124,9 @@ export default function HistoricMap({ route, selectedKey, onSelect }) {
 
   return <div className="historic-explorer">
     <div className="historic-map-column">
-      <div className="historic-map-bar"><span><i aria-hidden="true" /> Ruta del Casco Histórico</span><label className="historic-path-toggle"><input type="checkbox" checked={showPath} onChange={event => setShowPath(event.target.checked)} /> Mostrar trazado</label></div>
+      <div className="historic-map-bar"><span><i aria-hidden="true" /> {route.name}</span><label className="historic-path-toggle"><input type="checkbox" checked={showPath} onChange={event => setShowPath(event.target.checked)} /> Mostrar trazado</label></div>
       <div ref={stage} className={`historic-map-stage${dragging ? ' is-dragging' : ''}`}>
-        <svg className="historic-map-svg" viewBox={`${box.x} ${box.y} ${box.width} ${box.height}`} tabIndex={0} role="group" aria-label="Mapa ilustrado del Casco Histórico. Doce paradas seleccionables." aria-describedby="historic-map-help" onPointerDown={pointerDown} onPointerMove={pointerMove} onPointerUp={pointerEnd} onPointerCancel={pointerEnd} onKeyDown={keyboardMove}>
+        <svg className="historic-map-svg" viewBox={`${box.x} ${box.y} ${box.width} ${box.height}`} tabIndex={0} role="group" aria-label={`Mapa ilustrado de ${route.name}. ${route.stops.length} paradas seleccionables.`} aria-describedby="historic-map-help" onPointerDown={pointerDown} onPointerMove={pointerMove} onPointerUp={pointerEnd} onPointerCancel={pointerEnd} onKeyDown={keyboardMove}>
           <image key={imageRevision} href={imageUrl} x="0" y="0" width={width} height={height} aria-hidden="true" onError={() => setImageFailed(true)} onLoad={() => setImageFailed(false)} />
           {showPath && <g className="historic-walkway" aria-hidden="true" fill="none" strokeLinecap="round" strokeLinejoin="round"><path d={route.path} stroke="#d2ae59" strokeWidth="24" /><path d={route.path} stroke="#eed591" strokeWidth="18" /><path d={route.path} stroke="#72523d" strokeWidth="2.3" strokeDasharray="5 8" /></g>}
           {showPath && <g aria-hidden="true" pointerEvents="none"><rect x="438" y="605" width="160" height="20" rx="3" fill="#eed591" /><text x="518" y="619" textAnchor="middle" fill="#596f70" fontFamily="Arial,sans-serif" fontSize="11" fontWeight="700" letterSpacing="1.1">CHACABUCO</text></g>}
@@ -145,17 +146,17 @@ export default function HistoricMap({ route, selectedKey, onSelect }) {
       <div className="historic-map-caption"><div className="historic-legend"><span><i className="legend-start" aria-hidden="true" /> Inicio</span><span><i className="legend-stop" aria-hidden="true">1</i> Parada</span><span><i className="legend-path" aria-hidden="true" /> Recorrido</span></div><span>Mapa ilustrado · Sin escala</span></div>
       <p id="historic-map-help" className="historic-map-help">Selecciona una parada para conocerla. Amplía y arrastra para explorar el mapa.<span className="sr-only"> Con el teclado: Tab para elegir paradas, Enter para seleccionarlas; sobre el mapa, más y menos para acercar y alejar, flechas para desplazarte e Inicio para volver a la vista completa.</span></p>
     </div>
-    <aside className="historic-sidebar" aria-label="Paradas del Casco Histórico">
+    <aside className="historic-sidebar" aria-label={`Paradas de ${route.name}`}>
       <section className="historic-selected" aria-labelledby="selected-stop-name">
         <div className="historic-selected-top"><span className="historic-stop-position">PARADA {String(selected.order).padStart(2, '0')} <span>/ {route.stops.length}</span></span><LandmarkIcon symbol={selected.symbol} /></div>
         <div className="historic-selected-copy" aria-live="polite" aria-atomic="true"><p className="historic-stop-kind">{selected.kind}</p><h2 id="selected-stop-name">{selected.name}</h2><p>{selected.description}</p></div>
-        {selected.attractionId && <Link className="historic-detail-link" to={`/attractions/${selected.attractionId}`}>Conocer el lugar <span aria-hidden="true">↗</span></Link>}
+        {selected.attractionId && <Link className="historic-detail-link" to={withPreview(`/attractions/${selected.attractionId}`, preview)}>Conocer el lugar <span aria-hidden="true">↗</span></Link>}
         <div className="historic-stop-navigation"><button type="button" disabled={selectedIndex === 0} onClick={() => revealStop(route.stops[selectedIndex - 1])}><span aria-hidden="true">←</span> Anterior</button><button type="button" disabled={selectedIndex === route.stops.length - 1} onClick={() => revealStop(route.stops[selectedIndex + 1])}>Siguiente <span aria-hidden="true">→</span></button></div>
       </section>
-      <section className="historic-stop-list-section" aria-labelledby="historic-stops-title"><div className="historic-list-heading"><h2 id="historic-stops-title">Las doce paradas</h2><span>En orden</span></div>
+      <section className="historic-stop-list-section" aria-labelledby="historic-stops-title"><div className="historic-list-heading"><h2 id="historic-stops-title">Paradas del recorrido</h2><span>En orden</span></div>
         <ol className="historic-stop-list">{route.stops.map(stop => <li key={stop.key}><button type="button" aria-current={selected.key === stop.key ? 'location' : undefined} onClick={() => revealStop(stop)}><span className="historic-list-number">{stop.order}</span><span>{stop.name}</span><span className="historic-list-arrow" aria-hidden="true">↗</span></button></li>)}</ol>
       </section>
     </aside>
-    <div className="historic-route-footer"><span><strong>Casco Histórico</strong><span>Un recorrido por el centro de Casablanca</span></span><Link to="/routes/catalogo/2">Detalle del recorrido <span aria-hidden="true">→</span></Link></div>
+    <div className="historic-route-footer"><span><strong>{route.name}</strong><span>Un recorrido por el centro de Casablanca</span></span></div>
   </div>
 }

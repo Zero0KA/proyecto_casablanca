@@ -4,6 +4,7 @@ const path = require('node:path');
 const net = require('node:net');
 const { spawn, spawnSync } = require('node:child_process');
 const { randomUUID } = require('node:crypto');
+const { acquirePublicLock } = require('./backend/publicacion-lock.cjs');
 
 const ROOT = __dirname;
 const REPO = 'Zero0KA/proyecto_casablanca';
@@ -11,8 +12,7 @@ const PAGES = 'https://zero0ka.github.io/proyecto_casablanca/';
 const CONFIG = 'public/demo-api.json';
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 let api, tunel, cerrado = false, terminando = false;
-let lockFd;
-const lockPath = path.join(ROOT, '.demo-publica.lock');
+let releasePublicLock;
 
 function command(exe, args, visible = false) {
   const r = spawnSync(exe, args, { cwd: ROOT, encoding: 'utf8', stdio: visible ? 'inherit' : 'pipe', windowsHide: true });
@@ -32,30 +32,13 @@ function freePort() {
     s.listen(3001, '127.0.0.1', () => s.close(resolve));
   });
 }
-function takeLock() {
-  try { lockFd = fs.openSync(lockPath, 'wx'); }
-  catch (e) {
-    if (e.code !== 'EEXIST') throw e;
-    const previous = Number(fs.readFileSync(lockPath, 'utf8'));
-    let alive = false;
-    if (Number.isInteger(previous) && previous > 0) {
-      try { process.kill(previous, 0); alive = true; } catch (error) { if (error.code === 'EPERM') alive = true; }
-    }
-    if (alive) throw new Error('Ya hay un lanzador público abierto. Usa esa ventana o ciérrala con Ctrl+C.');
-    fs.unlinkSync(lockPath);
-    lockFd = fs.openSync(lockPath, 'wx');
-  }
-  fs.writeFileSync(lockFd, String(process.pid));
-}
+function takeLock() { releasePublicLock = acquirePublicLock(ROOT); }
 function stop() {
   if (terminando) return;
   terminando = true;
   cerrado = true;
   for (const child of [tunel, api]) if (child && child.exitCode === null) child.kill();
-  if (lockFd !== undefined) {
-    fs.closeSync(lockFd); lockFd = undefined;
-    fs.unlinkSync(lockPath);
-  }
+  if (releasePublicLock) { releasePublicLock(); releasePublicLock = undefined; }
 }
 async function dbReady() {
   for (let i = 0; i < 30; i++) {

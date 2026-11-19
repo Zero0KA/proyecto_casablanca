@@ -2,6 +2,8 @@
 
 Entrega del 30/10/2026 sobre la versión publicada `4053285`. Se conserva el diseño claro, las sesiones, los controles de cuenta, el CRUD de categorías, los lanzadores y el transporte hacia GitHub Pages.
 
+**Nota del 19/11/2026:** los pasos siguientes describen la instalación administrativa anterior. Si ya se aplicó, esta nueva conexión del catálogo no requiere repetir SQL. Seguir [CATALOGO_CONECTADO.md](CATALOGO_CONECTADO.md).
+
 ## Aplicación en la BD actual
 
 1. Cerrar FRONT, API y el lanzador público con Ctrl+C. Mantener los respaldos del proyecto y de PostgreSQL fuera de la carpeta de trabajo.
@@ -78,13 +80,15 @@ El instalador recibido incluía además un bloque de preparación que exigía cu
 
 **El ERD no cambia:** no se añaden tablas ni columnas, tipos, valores por defecto, nulabilidad, claves o relaciones. Documentar las funciones, permisos y política de borrado sí requiere actualizar la explicación técnica. La población cambia datos, no el modelo.
 
-## Alcance público y pendientes acordados
+## Catálogo público desde el 19 de noviembre de 2026
 
-La administración nueva usa PostgreSQL real. Las rutas que se publiquen en BD ya aparecen en el apartado público de rutas reales y permiten iniciar recorridos mediante el flujo existente.
+La administración y las pantallas públicas consultan ahora PostgreSQL. Inicio, Atractivos, fichas, Rutas y Mapas interactivos ya no agregan una copia del catálogo local. Una edición se refleja al cargar o volver a la pantalla, sin publicar código nuevo. Solo se muestra contenido publicado. El retiro o borrado autorizado lo retira también de las consultas públicas.
 
-**El Inicio, las fichas numéricas de atractivos, las tres rutas del catálogo local y el mapa ilustrado/geográfico de presentación siguen leyendo sus datos locales. Editar sus registros iniciales en BD no cambia automáticamente esas vistas.** Unificar completamente el catálogo público con BD quedó fuera de esta entrega. Por ello, publicar una copia real de una ruta del catálogo puede mostrar ambas hasta resolver esa unificación.
+**Vista previa** y **Ver ficha** permiten revisar registros sin publicar con la cuenta administradora. La API verifica el rol en BD; una URL compartida no convierte un borrador en público. Antes de presentar un catálogo público, completar y publicar los registros requeridos. Los datos iniciales se mantienen como borradores hasta esa acción.
 
-Se aporta `src/data/catalogBindings.js` con los UUID iniciales de Casco y sus doce asociaciones para facilitar el adaptador existente. Activarlo requiere confirmar ubicaciones, publicar el contenido y mantener coincidentes las doce paradas y su orden. El dibujo y el trazado se actualizan manualmente al cambiar el circuito. Las ediciones de coordenadas no redibujan calles ni fachadas.
+El mapa ilustrado requiere los doce UUID originales y el orden que corresponde al trazado. Si cambia el circuito, las listas y la geografía siguen usando sus datos actuales y la ilustración se omite hasta revisarla manualmente. GPS nulo no se reemplaza por las aproximaciones históricas del folleto.
+
+Esta conexión no necesita nuevos objetos SQL ni modifica el ERD, cuentas, sesiones o permisos. Consulta [CATALOGO_CONECTADO.md](CATALOGO_CONECTADO.md) para la actualización del código y sus pruebas. Las reglas anteriores de población y borrado continúan vigentes.
 
 También quedan fuera: subida de imágenes, generación automática de ilustraciones, navegación giro a giro, ubicación del visitante, acreditación QR en el frontend, descarga offline y sincronización. Las limitaciones se documentan aquí, sin convertirlas en mensajes promocionales o explicaciones técnicas en la página pública.
 

@@ -1,0 +1,26 @@
+.catalog-preview { padding: 1rem 1.25rem; margin: 1.5rem 0; border: 1px solid #b5c4a4; border-left: 4px solid #385438; background: #eef2e6; border-radius: .5rem; color: #223b28; font-size: .95rem; }
+.catalog-preview p { margin: 0 0 .7rem; line-height: 1.6; }
+.catalog-preview a { color: #612333; font-weight: 600; }
+.catalog-status { margin: 1.5rem 0; }
+.catalog-status p { margin: 0 0 1rem; }
+.catalog-description { white-space: pre-line; overflow-wrap: anywhere; }
+.catalog-filters > div { display: flex; align-items: flex-end; flex-wrap: wrap; gap: 1rem; }
+.catalog-filters input { flex: 1 1 16rem; min-width: 0; }
+.catalog-category-filter { display: grid; gap: .4rem; min-width: 12rem; font-size: .95rem; }
+.catalog-category-filter select { min-height: 46px; width: 100%; padding: .6rem 2.3rem .6rem .75rem; border: 1px solid #8a947e; border-radius: .4rem; background-color: #fffef9; color: #233628; font: inherit; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='m1 1 5 5 5-5' fill='none' stroke='%23354d38' stroke-width='2'/%3E%3C/svg%3E"); background-position: right .9rem center; background-repeat: no-repeat; }
+.catalog-category-list { display: flex; flex-wrap: wrap; list-style: none; padding: 0; gap: .5rem; margin: 1rem 0; }
+.catalog-category-list li { display: inline-flex; align-items: center; gap: .4rem; border: 1px solid #c4cdb9; padding: .4rem .65rem; border-radius: 2rem; color: #2b4932; background: #f0f3e9; font-size: .9rem; }
+.catalog-category-list .category-icon { width: 1.25rem; height: 1.25rem; flex: 0 0 auto; }
+.catalog-related { margin-top: 2.5rem; padding-top: 1.5rem; border-top: 1px solid #c5cdb7; }
+.catalog-related ul { list-style: none; padding: 0; }
+.catalog-related li, .catalog-map-actions, .catalog-route-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem 1.5rem; }
+.catalog-related li { justify-content: space-between; padding: .8rem 0; border-bottom: 1px solid #dbe0cf; }
+.catalog-related a { color: #612333; }
+.catalog-map-actions, .catalog-route-actions { margin: 1.5rem 0 2rem; }
+.interactive-map-card + .interactive-map-card { margin-top: 1.5rem; }
+.map-page .historic-breadcrumb, .map-page .geo-stops-panel button, .map-page .geo-selected-detail p { font-size: 1rem; }
+.map-page .geo-stops-panel small, .map-page .geo-map-legend { font-size: .875rem; }
+.map-page .historic-view-switch button { min-width: 7rem; min-height: 44px; font-size: 1rem; }
+.map-page .geo-stops-panel button { min-height: 48px; }
+.catalog-preview a:focus-visible, .catalog-category-filter select:focus-visible { outline: 3px solid #193c2b; outline-offset: 4px; }
+@media (max-width: 600px) { .catalog-category-filter { width: 100%; min-width: 0; }.catalog-route-actions .btn { width: 100%; text-align: center; }.catalog-related li { align-items: flex-start; flex-direction: column; gap: .5rem; } }

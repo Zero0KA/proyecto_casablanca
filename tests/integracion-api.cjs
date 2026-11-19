@@ -53,3 +53,5 @@ if(require.main===module) withDatabase(async({pool,name,port,host,user,password}
 }).catch(e=>{console.error(e);process.exitCode=1});
 
 // RESULTADO DOCUMENTADO 30/10/2026: 27 grupos correctos con BD/API reales; BD y rol temporales eliminados.
+
+// REPETICION 19/11/2026: 27 grupos correctos, 0 fallos; PostgreSQL 17.11/PostGIS 3.5.2 reales; BD y rol temporales eliminados.

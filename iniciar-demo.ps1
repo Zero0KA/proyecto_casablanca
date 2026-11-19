@@ -7,7 +7,7 @@ param(
 $ErrorActionPreference = 'Stop'
 $Raiz = $PSScriptRoot
 $Backend = Join-Path $Raiz 'backend'
-$ApiUrl = 'http://127.0.0.1:3001/api/estado'
+$ApiUrl = 'http://127.0.0.1:3001/api/salud'
 
 function Puerto-Ocupado([int]$Puerto) {
     $conexion = Get-NetTCPConnection -State Listen -LocalPort $Puerto -ErrorAction SilentlyContinue
@@ -52,7 +52,7 @@ try {
     $Host.UI.RawUI.WindowTitle = 'COMANDOS - Inicio de Casablanca'
     Write-Host 'CASABLANCA - DEMOSTRACION LOCAL' -ForegroundColor Cyan
     foreach ($Archivo in @('package.json', 'vite.config.js', 'src\pages\Categories.jsx',
-            'backend\server.cjs', 'backend\.env', 'renovar-demo.cjs')) {
+            'backend\server.cjs', 'backend\.env', 'backend\catalogo.cjs')) {
         if (-not (Test-Path -LiteralPath (Join-Path $Raiz $Archivo))) {
             throw "Falta $Archivo. Coloca los dos lanzadores en la raiz del proyecto actualizado."
         }
@@ -73,16 +73,6 @@ try {
         throw 'Este lanzador usa el puerto 3001. Revisa PORT=3001 en backend/.env y el proxy de Vite.'
     }
 
-    Write-Host 'Comprobando o renovando la sesion de demostracion...'
-    & node (Join-Path $Raiz 'renovar-demo.cjs')
-    $ResultadoSesion = $LASTEXITCODE
-    if ($ResultadoSesion -ne 0 -and $ResultadoSesion -ne 10) {
-        throw 'No se pudo preparar la sesion. Lee el mensaje anterior. No se inicia el frontend.'
-    }
-    if ($ResultadoSesion -eq 10 -and (Puerto-Ocupado 3001)) {
-        throw 'La sesion fue renovada, pero hay una API ejecutandose con la configuracion anterior. Pulsa Ctrl+C en su ventana API, cierrala y vuelve a abrir este lanzador. El nuevo token ya esta guardado.'
-    }
-
     if (Puerto-Ocupado 3001) {
         Write-Host 'El puerto 3001 ya esta ocupado. Comprobando la API existente...'
     } else {
@@ -96,15 +86,12 @@ try {
         Start-Sleep -Milliseconds 750
     }
     if ($null -eq $Estado) {
-        throw ('La API no respondio con estado autorizado. Revisa la ventana API, PostgreSQL y backend/.env. ' +
-            'Si el token vencio, genera otra sesion, actualiza DEMO_ADMIN_TOKEN y reinicia API. ' +
-            'Si 3001 pertenece a otro programa, no lo cierres sin identificarlo.')
+        throw 'La API no respondio. Revisa API, PostgreSQL y backend/.env. Si 3001 pertenece a una API antigua, detenla con Ctrl+C antes de repetir.'
     }
-    if ($Estado.conectado -ne $true -or $Estado.administrador -ne $true -or
-        $Estado.base -ne 'casablanca' -or $Estado.cuenta_bd -ne 'casablanca_backend') {
-        throw 'El estado no coincide con la demo autorizada (casablanca / casablanca_backend / administrador=true). Revisa la API y su configuracion.'
+    if ($Estado.conectado -ne $true -or $Estado.servicio -ne 'casablanca-api' -or $Estado.version -ne '2026-11-19') {
+        throw 'La API existente no corresponde a esta version. Deten la API anterior e inicia nuevamente.'
     }
-    Write-Host 'BD conectada y consulta administrativa autorizada.' -ForegroundColor Green
+    Write-Host 'API actualizada y base de datos conectada.' -ForegroundColor Green
 
     # Elige un puerto libre: no cierra procesos existentes ni depende del puerto anterior.
     $Elegido = $null
@@ -125,10 +112,13 @@ try {
     }
     if (-not $Listo) { throw 'FRONT no termino de iniciar. Revisa la ventana FRONT y vite.config.js.' }
     # Comprueba tambien el proxy, no solo que Vite entregue una pagina.
-    $PorProxy = Invoke-RestMethod -Uri ($BaseFront + 'api/estado') -TimeoutSec 5
-    if ($PorProxy.administrador -ne $true -or $PorProxy.base -ne 'casablanca' -or
-        $PorProxy.cuenta_bd -ne 'casablanca_backend') {
-        throw 'La comprobacion a traves de Vite no coincide con la API. Revisa su proxy.'
+    $PorProxy = Invoke-RestMethod -Uri ($BaseFront + 'api/salud') -TimeoutSec 5
+    if ($PorProxy.conectado -ne $true -or $PorProxy.servicio -ne 'casablanca-api' -or $PorProxy.version -ne '2026-11-19') {
+        throw 'La comprobacion a traves de Vite no coincide con la API actual. Revisa su proxy.'
+    }
+    $Catalogo = Invoke-RestMethod -Uri ($BaseFront + 'api/catalogo') -TimeoutSec 12
+    if ($null -eq $Catalogo.atractivos -or $null -eq $Catalogo.rutas -or $Catalogo.vista_previa -ne $false) {
+        throw 'El catalogo no respondio correctamente. Revisa la actualizacion anterior de la BD y la ventana API.'
     }
     $Pantalla = $BaseFront + '#/'
     Start-Process $Pantalla
@@ -140,7 +130,7 @@ try {
 } catch {
     Write-Host ''
     Write-Host $_.Exception.Message -ForegroundColor Red
-    Write-Host 'No se reinstalo la BD, no se cerraron otros procesos. La sesion pudo renovarse antes de este error.'
+    Write-Host 'No se reinstalo la BD ni se cerraron otros procesos. Este lanzador no renueva sesiones.'
     Read-Host 'Pulsa Enter para cerrar' | Out-Null
     exit 1
 }

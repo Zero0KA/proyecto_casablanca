@@ -4,7 +4,7 @@ Investigación del 29/10/2026. El orden y las identidades proceden de las tres f
 
 Se cruzó ese esquema con OpenStreetMap y documentación municipal/patrimonial. **No se realizó validación en terreno ni se certificó la precisión de acceso a cada inmueble.** Las siete referencias cartográficas identifican lugares; los centroides no representan necesariamente su puerta de entrada. Cinco sectores no pudieron asociarse de forma fiable a una puerta o inmueble exacto y se distinguen como aproximados.
 
-| Nº | Parada | Latitud / longitud en la vista geográfica | Calidad y criterio |
+| Nº | Parada | Referencia investigada en 2026 | Calidad y criterio |
 | --- | --- | --- | --- |
 | 1 | El Control | -33.3170602 / -71.4088361 | Referencia cartográfica: monolito del camino, OSM nodo 11596399847, junto a Constitución/Buin. |
 | 2 | Plaza Bicentenario | -33.3182 / -71.4048 | **Aproximada**: sector Chacabuco/Chapito inferido del folleto. El acta municipal confirma la plaza en Chacabuco, no este punto exacto. |
@@ -19,7 +19,7 @@ Se cruzó ese esquema con OpenStreetMap y documentación municipal/patrimonial. 
 | 11 | Parroquia Santa Bárbara | -33.3204394615 / -71.4108943538 | Referencia cartográfica: polígono OSM 132380618. |
 | 12 | Centro Cultural y Museo | -33.3207206875 / -71.41119225 | Referencia cartográfica: Centro Cultural, polígono OSM 1233828224; conjunto de Portales 02. El Museo tiene punto propio contiguo. |
 
-La carga inicial de BD incorpora **solo las siete referencias cartográficas**, sin tratar las otras cinco inferencias como coordenadas confirmadas. Las cinco quedan NULL y el administrador puede completarlas en el formulario. La vista de presentación sí muestra los doce números; las aproximaciones llevan texto y símbolo diferenciado. El círculo que aparece al seleccionar una aproximación es orientativo, no un margen de error medido ni una zona garantizada.
+La carga inicial de BD incorpora **solo las siete referencias cartográficas**, sin tratar las otras cinco inferencias como coordenadas confirmadas. Las cinco quedan NULL y el administrador puede completarlas en el formulario. Desde el 19/11/2026 la vista pública lee exclusivamente el GPS guardado en BD: con la carga inicial muestra siete marcadores y doce entradas en la lista. Las cinco aproximaciones de esta tabla son antecedentes de investigación; no se usan como sustituto de un NULL. El administrador puede completarlas cuando exista validación suficiente.
 
 No se dibuja una línea GPS uniendo los puntos: una línea recta entre marcadores no demuestra que exista un itinerario peatonal transitable. El trazado del folleto permanece en la vista ilustrada. No se calculan distancias, tiempos, accesos, horarios o instrucciones de giro sin una fuente y validación adecuadas.
 
@@ -32,4 +32,4 @@ No se dibuja una línea GPS uniendo los puntos: una línea recta entre marcadore
 - [Turismo Casablanca 2023, Municipalidad](https://municipalidadcasablanca.cl/phocadownload/Turismo/Turismo_Casablanca_2023.pdf). Referencias de lugares y servicios; no permite fijar por sí solo todas las puertas históricas.
 - [Inventario de inmuebles y zonas de conservación histórica, MINVU](https://www.patrimoniourbano.gob.cl/inmuebles-y-zonas-patrimoniales/). Apoyo a la identificación de inmuebles de Portales. Una dirección de inventario sin nombre no se equiparó automáticamente con una casa del folleto.
 
-Antes de activar el mapa desde BD: confirmar con Turismo o levantamiento en terreno las cinco referencias pendientes, verificar puertas/accesos de las demás y contrastar el circuito con la señalética actual. El administrador de contenido incorpora la corrección; quien valide la ubicación debe quedar registrado en la documentación del proyecto. No se inventa esa validación.
+Para completar la validación de ubicaciones: confirmar con Turismo o levantamiento en terreno las cinco referencias pendientes, verificar puertas/accesos de las demás y contrastar el circuito con la señalética actual. El administrador de contenido incorpora la corrección; quien valide la ubicación debe quedar registrado en la documentación del proyecto. No se inventa esa validación.

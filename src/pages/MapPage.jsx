@@ -1,21 +1,30 @@
-import { Link, useSearchParams } from 'react-router-dom'
-import HistoricMap from '../components/HistoricMap'
-import GeographicMap from '../components/GeographicMap'
-import { useHistoricRoute } from '../hooks/useHistoricRoute'
+import { lazy, Suspense } from 'react'
+import { Link, useParams, useSearchParams } from 'react-router-dom'
+import { historicDatabaseRouteId } from '../data/catalogBindings.js'
+import { useCatalog } from '../hooks/useCatalog'
+import { canonicalRouteId, selectedStopKey, withPreview } from '../services/catalogModel.js'
+import CatalogStatus, { PreviewNotice } from '../components/CatalogStatus'
 import './MapPage.css'
 
+const HistoricMap = lazy(() => import('../components/HistoricMap'))
+const GeographicMap = lazy(() => import('../components/GeographicMap'))
+
 export default function MapPage() {
-  const [params, setParams] = useSearchParams()
-  const { route, error, retry } = useHistoricRoute()
-  const geographical = params.get('vista') === 'geografico' || params.has('lugar')
-  const selectedKey = params.get('parada') || (params.has('lugar') ? 'centro_cultural_museo' : null)
-  function changeView(value) { setParams({ ...(value === 'geografico' ? { vista: 'geografico' } : {}), ...(selectedKey ? { parada:selectedKey } : {}) }, { replace:true }) }
-  function selectStop(key) { setParams({ ...(geographical ? { vista:'geografico' } : {}), ...(key ? { parada:key } : {}) }, { replace:true,preventScrollReset:true }) }
+  const { id } = useParams(), [params, setParams] = useSearchParams()
+  const state = useCatalog()
+  const route = state.catalog?.routes.find(item => item.id === (id ? canonicalRouteId(id) : historicDatabaseRouteId))
+  const geographical = !route?.illustrated || params.get('vista') === 'geografico'
+  const selectedKey = route ? selectedStopKey(route, params.get('parada')) : null
+  function update(view, key) {
+    const next = { ...(state.preview ? { vista_previa: '1' } : {}), ...(view === 'geografico' ? { vista: 'geografico' } : {}), ...(key ? { parada: key } : {}) }
+    setParams(next, { replace: true, preventScrollReset: true })
+  }
   return <section className="page map-page">
-    <header className="historic-page-heading">
-      <div><Link className="historic-breadcrumb" to="/mapas">Mapas interactivos <span aria-hidden="true">/</span></Link><p className="page-eyebrow">MAPA DEL RECORRIDO</p><h1>{route?.name || 'Casco Histórico'}</h1><p className="page-intro">Doce paradas para descubrir el patrimonio del centro de Casablanca.</p></div>
-      <div className="historic-view-switch" role="group" aria-label="Tipo de mapa"><button type="button" aria-pressed={!geographical} onClick={() => changeView('ilustrado')}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 5 6-2 6 2 6-2v16l-6 2-6-2-6 2V5Zm6-2v16m6-14v16" /></svg>Ilustrado</button><button type="button" aria-pressed={geographical} onClick={() => changeView('geografico')}><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M3 12h18M12 3c-5 4-5 14 0 18 5-4 5-14 0-18Z" /></svg>Geográfico</button></div>
-    </header>
-    {error ? <div className="historic-load-error" role="alert"><p>No se pudo cargar el recorrido.</p><button type="button" onClick={retry}>Reintentar</button></div> : route ? geographical ? <GeographicMap route={route} selectedKey={selectedKey} onSelect={selectStop} /> : <HistoricMap route={route} selectedKey={selectedKey} onSelect={selectStop} /> : <p role="status">Cargando mapa…</p>}
+    <Link className="historic-breadcrumb" to={withPreview('/mapas', state.preview)}>Mapas interactivos</Link>
+    <PreviewNotice preview={state.preview} /><CatalogStatus {...state} />
+    {state.catalog && !route && <><h1>Mapa no disponible</h1><p>El recorrido solicitado no está disponible para consulta.</p></>}
+    {route && <><header className="historic-page-heading"><div><p className="page-eyebrow">MAPA DEL RECORRIDO</p><h1>{route.name}</h1><p className="page-intro">{route.description}</p></div>{route.illustrated && <div className="historic-view-switch" role="group" aria-label="Tipo de mapa"><button type="button" aria-pressed={!geographical} onClick={() => update('ilustrado', selectedKey)}>Ilustrado</button><button type="button" aria-pressed={geographical} onClick={() => update('geografico', selectedKey)}>Geográfico</button></div>}</header>
+    <Suspense fallback={<p role="status">Cargando mapa…</p>}>{geographical ? <GeographicMap route={route} preview={state.preview} selectedKey={selectedKey} onSelect={key => update('geografico', key)} /> : <HistoricMap route={route} preview={state.preview} selectedKey={selectedKey} onSelect={key => update('ilustrado', key)} />}</Suspense>
+    <div className="catalog-map-actions"><Link className="home-link" to={withPreview(`/routes/${route.id}`, state.preview)}>Ver detalle del recorrido</Link>{state.preview && <Link className="home-link" to={`/admin/rutas/${route.id}/paradas`}>Editar paradas</Link>}</div></>}
   </section>
 }

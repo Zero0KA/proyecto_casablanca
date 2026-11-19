@@ -4,7 +4,13 @@ export const SessionContext = createContext(null)
 export const API = `${import.meta.env.BASE_URL}api`
 export function useSession() { return useContext(SessionContext) }
 export async function apiFetch(ruta, opciones = {}) {
-  const respuesta = await fetchApi(`${API}${ruta}`, { credentials: 'same-origin', ...opciones })
+  let respuesta
+  try { respuesta = await fetchApi(`${API}${ruta}`, { credentials: 'same-origin', ...opciones }) }
+  catch (error) {
+    if (error.name === 'AbortError') throw error
+    if (error instanceof TypeError) throw new Error('No se pudo conectar con el servicio. Intenta nuevamente.', { cause: error })
+    throw error
+  }
   let datos
   try { datos = await respuesta.json() } catch (fallo) { if (fallo.name === 'AbortError') throw fallo; throw new Error('El servicio no respondió correctamente. Intenta nuevamente.', { cause: fallo }) }
   if (!respuesta.ok) { const error = new Error(datos.mensaje === 'No se pudo completar la consulta. Comprueba la API y la BD.' ? 'No se pudo completar la consulta. Intenta nuevamente.' : datos.mensaje || 'No se pudo completar la operación.'); error.status = respuesta.status; throw error }

@@ -6,6 +6,8 @@ import Home from './pages/Home'
 import MapPage from './pages/MapPage'
 import InteractiveMaps from './pages/InteractiveMaps'
 import AttractionDetail from './pages/AttractionDetail'
+import AttractionMap from './pages/AttractionMap'
+import { canonicalAttractionId, withPreview } from './services/catalogModel.js'
 import Attractions from './pages/Attractions'
 import RoutesPage from './pages/Routes'
 import Profile from './pages/Profile'
@@ -21,6 +23,7 @@ import { SessionProvider, RequireSession, GuestOnly } from './components/Session
 import './App.css'
 import './integration.css'
 import './refresh.css'
+import './catalog.css'
 
 function ScrollToTop() {
   const { pathname } = useLocation()
@@ -45,6 +48,8 @@ function App() {
           <Route path="/map" element={<LegacyMap />} />
           <Route path="/mapas" element={<InteractiveMaps />} />
           <Route path="/mapas/casco-historico" element={<MapPage />} />
+          <Route path="/mapas/rutas/:id" element={<MapPage />} />
+          <Route path="/mapas/atractivos/:id" element={<AttractionMap />} />
           <Route path="/routes" element={<RoutesPage />} />
           <Route path="/attractions" element={<Attractions />} />
           <Route path="/attractions/:id" element={<AttractionDetail />} />
@@ -58,9 +63,9 @@ function App() {
           <Route path="/admin/rutas" element={<RequireSession admin><AdminContent key="rutas" kind="ruta" /></RequireSession>} />
           <Route path="/admin/rutas/:id/paradas" element={<RequireSession admin><AdminStops /></RequireSession>} />
           <Route path="/routes/catalogo/:id" element={<CatalogRoute />} />
-          <Route path="/routes/:id" element={<StartRoute />} />
+          <Route path="/routes/:id" element={<StartRoute key="detalle" />} />
           <Route path="*" element={<section className="page"><h1>Página no encontrada</h1><p>Usa la navegación para volver a los lugares y rutas de Casablanca.</p></section>} />
-          <Route path="/routes/:id/start" element={<RequireSession><StartRoute start /></RequireSession>} />
+          <Route path="/routes/:id/start" element={<RequireSession><StartRoute key="iniciar" start /></RequireSession>} />
         </Routes>
       </main>
       <Footer />
@@ -72,6 +77,9 @@ export default App
 
 function LegacyMap() {
   const location = useLocation()
+  const params = new URLSearchParams(location.search)
+  const attraction = canonicalAttractionId(params.get('lugar'))
+  if (attraction) return <Navigate to={withPreview(`/mapas/atractivos/${attraction}`, params.get('vista_previa') === '1')} replace />
   return <Navigate to={`/mapas/casco-historico${location.search}`} replace />
 }
 

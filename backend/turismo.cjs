@@ -1,6 +1,7 @@
 'use strict';
 const express=require('express');
 const { exigirCookie }=require('./sesiones.cjs');
+const { consultar, leerRutasPublicadas }=require('./catalogo.cjs');
 const uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 function crearRouterTurismo(pool){
   const router=express.Router();
@@ -11,16 +12,16 @@ function crearRouterTurismo(pool){
     return res.status(status).json({mensaje});
   }
   router.get('/rutas',async(_req,res)=>{
-    try{const {rows}=await pool.query("SELECT * FROM public.listar_rutas_publicadas('es'::text)");return res.json(rows)}catch(error){return fallo(res,error)}
+    try{return res.json(await consultar(pool,client=>leerRutasPublicadas(client)))}catch(error){return fallo(res,error)}
   });
   router.get('/rutas/:id',async(req,res)=>{
     if(!uuid.test(req.params.id))return res.status(400).json({mensaje:'Identificador de ruta inválido.'});
     try{
-      const lista=await pool.query("SELECT * FROM public.listar_rutas_publicadas('es'::text)");
-      const ruta=lista.rows.find(r=>r.ruta_id===req.params.id.toLowerCase());
+      const lista=await consultar(pool,client=>leerRutasPublicadas(client));
+      const ruta=lista.find(r=>r.ruta_id===req.params.id.toLowerCase());
       if(!ruta)return res.status(404).json({mensaje:'La ruta no existe o no está publicada.'});
-      const paradas=await pool.query("SELECT * FROM public.listar_paradas_ruta_publicada($1::uuid,'es'::text)",[req.params.id]);
-      return res.json({ruta,paradas:paradas.rows});
+      const {paradas,...ficha}=ruta;
+      return res.json({ruta:ficha,paradas});
     }catch(error){return fallo(res,error)}
   });
   router.post('/rutas/:id/recorridos',exigirCookie,async(req,res)=>{

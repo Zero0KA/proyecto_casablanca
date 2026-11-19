@@ -1,0 +1,39 @@
+{
+  "fecha": "2026-11-19",
+  "metodo": "Revisión asistida en Chrome mediante interfaz y DOM de una copia con API y BD aisladas",
+  "ancho_comprobado_px": 1348,
+  "desborde_horizontal_del_mapa": false,
+  "paradas_ilustradas": 12,
+  "color_seleccion": "rgb(192, 32, 38)",
+  "verificaciones": [
+    "Inicio obtiene atractivos y tres resúmenes de rutas reales",
+    "Atractivos lista cinco lugares publicados y su categoría",
+    "Filtro de categoría combinado con búsqueda plaza deja un resultado",
+    "Búsqueda sin coincidencias presenta cero resultados",
+    "Limpiar filtros recupera cinco resultados",
+    "Ficha de Plaza muestra sus dos rutas asociadas por ID",
+    "Detalle de Casco muestra las doce paradas y sus enlaces UUID",
+    "Enlace antiguo routes/catalogo/2 resuelve la ficha UUID",
+    "Iniciar recorrido sin cuenta conduce al formulario de login",
+    "Vista previa sin sesión rechaza acceso y no muestra borradores",
+    "El mapa ilustrado tiene doce puntos y selección roja",
+    "La selección se conserva al cambiar a geográfico: siete marcadores y detalle sin GPS en Plaza Bicentenario",
+    "El enlace antiguo map?lugar=4 resuelve la ficha de mapa de Biblioteca por UUID",
+    "Mapas interactivos ofrece las tres rutas de la prueba",
+    "Mapa sin desborde horizontal en el ancho de escritorio medido",
+    "Revalidar al recuperar foco conserva la vista en la captura final"
+  ],
+  "limites": [
+    "No se probó la BD del PC de Zero",
+    "No se abrió un túnel real",
+    "No se envió el login personal del usuario",
+    "La vista autenticada administrativa se validó por API y BD; no se realizó login mediante el navegador",
+    "No es una campaña móvil ni una auditoría WCAG completa"
+  ],
+  "correcciones_observadas": [
+    "Se eliminó key del objeto propagado como props a CatalogStatus",
+    "Se evitó vaciar la pantalla durante la actualización al recuperar foco",
+    "Se quitó el enlace duplicado al detalle de ruta",
+    "Se tradujo el error de red genérico a un mensaje comprensible"
+  ]
+}

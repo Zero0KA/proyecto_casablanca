@@ -1,38 +1,18 @@
-import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import heroImage from '../assets/casablanca-hero.jpg'
-import { attractions } from '../data/attractions'
-import { apiFetch, useSession } from '../components/SessionContext'
+import { publicImage, useSession } from '../components/SessionContext'
 import RouteOverview from '../components/RouteOverview'
-import { routeCatalog, publishedRoute } from '../data/routeCatalog'
+import { routeSummary, withPreview } from '../services/catalogModel.js'
+import { useCatalog } from '../hooks/useCatalog'
+import CatalogStatus, { PreviewNotice } from '../components/CatalogStatus'
 import './Home.css'
-
-const highlights = [1, 5, 4].map(id => attractions.find(place => place.id === id))
 
 export default function Home() {
   const { usuario, error: sessionError } = useSession()
-  const [routes, setRoutes] = useState([])
-  const [status, setStatus] = useState('loading')
-  const [revision, setRevision] = useState(0)
-
-  useEffect(() => {
-    const controller = new AbortController()
-    async function load() {
-      try {
-        const result = await apiFetch('/rutas', { signal: controller.signal, cache: 'no-store' })
-        if (!Array.isArray(result)) throw new Error('Respuesta inesperada')
-        if (!controller.signal.aborted) { setRoutes(result); setStatus('ready') }
-      } catch (error) {
-        if (!controller.signal.aborted && error.name !== 'AbortError') setStatus('offline')
-      }
-    }
-    load()
-    return () => controller.abort()
-  }, [revision])
-
-  const summaries = [...routes.map(publishedRoute), ...routeCatalog].slice(0, 3)
-
-  function retry() { setStatus('loading'); setRevision(value => value + 1) }
+  const state = useCatalog()
+  const { catalog, preview } = state
+  const highlights = (catalog?.places || []).slice(0, 3)
+  const summaries = (catalog?.routes || []).slice(0, 3).map(route => routeSummary(route, preview))
   function showSteps() {
     document.getElementById('como-funciona')?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' })
     document.getElementById('steps-title')?.focus({ preventScroll: true })
@@ -53,20 +33,21 @@ export default function Home() {
       <Link className="home-link" to="/profile">Mis recorridos <span aria-hidden="true">→</span></Link>
     </aside>}
 
+    <div className="home-container"><PreviewNotice preview={preview} /><CatalogStatus {...state} /></div>
     <section className="home-discover home-container" aria-labelledby="places-title">
-      <div className="home-section-heading"><div><p className="home-eyebrow">CULTURA Y PATRIMONIO</p><h2 id="places-title">Atractivos</h2></div><Link className="home-link" to="/attractions">Todos los atractivos <span aria-hidden="true">→</span></Link></div>
+      <div className="home-section-heading"><div><p className="home-eyebrow">CULTURA Y PATRIMONIO</p><h2 id="places-title">Atractivos</h2></div><Link className="home-link" to={withPreview('/attractions', preview)}>Todos los atractivos</Link></div>
+      {catalog && !highlights.length && <p>No hay atractivos disponibles en este momento.</p>}
       <div className="home-places">{highlights.map((place, index) => <article className="home-place" key={place.id}>
-        <Link to={`/attractions/${place.id}`} className="home-place-link">
-          <div className="home-place-image"><img src={place.image} alt="" loading="lazy" decoding="async" width="640" height="480" /><span className="home-place-number" aria-hidden="true">0{index + 1}</span></div>
+        <Link to={withPreview(`/attractions/${place.id}`, preview)} className="home-place-link">
+          <div className="home-place-image">{publicImage(place.image) && <img src={publicImage(place.image)} alt="" loading="lazy" decoding="async" width="640" height="480" />}<span className="home-place-number" aria-hidden="true">0{index + 1}</span></div>
           <div className="home-place-copy"><h3>{place.name}</h3><p>{place.description}</p><span className="home-link">Ver detalle <span aria-hidden="true">↗</span></span></div>
         </Link>
       </article>)}</div>
     </section>
 
     <section className="home-route-section" aria-labelledby="route-title"><div className="home-container home-routes-summary">
-      <div className="home-section-heading"><div><p className="home-eyebrow">RECORRIDOS</p><h2 id="route-title">Rutas</h2></div><Link className="home-link" to="/routes">Todas las rutas <span aria-hidden="true">→</span></Link></div>
-      {status === 'loading' && <p role="status">Actualizando rutas…</p>}
-      {status === 'offline' && <p className="route-update-note" role="status">No se pudieron actualizar las rutas. <button type="button" onClick={retry}>Reintentar</button></p>}
+      <div className="home-section-heading"><div><p className="home-eyebrow">RECORRIDOS</p><h2 id="route-title">Rutas</h2></div><Link className="home-link" to={withPreview('/routes', preview)}>Todas las rutas</Link></div>
+      {catalog && !summaries.length && <p>No hay rutas disponibles en este momento.</p>}
       <div className="route-overview-list">{summaries.map((route, index) => <RouteOverview key={route.key} route={route} position={index} />)}</div>
     </div></section>
 

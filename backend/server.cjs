@@ -12,6 +12,10 @@ const app = express();
 const pool = new Pool({
   connectionTimeoutMillis: 5000,
 });
+// pg retira las conexiones inactivas rotas. Registrar el código evita derribar la API.
+pool.on('error', error => {
+  console.error('Conexión inactiva interrumpida:', error.code || 'sin código');
+});
 
 // Conexión opcional con GitHub Pages para presentaciones.
 require('./modo-publico.cjs').configurarModoPublico(app, pool);
@@ -27,6 +31,8 @@ app.use((_req, res, next) => {
 const { crearRouterSesiones, protegerOrigen, exigirCookie } = require('./sesiones.cjs');
 app.use('/api', protegerOrigen);
 app.use('/api', crearRouterSesiones(pool));
+const { crearRouterCatalogo } = require('./catalogo.cjs');
+app.use('/api', crearRouterCatalogo(pool));
 const { crearRouterTurismo } = require('./turismo.cjs');
 app.use('/api', crearRouterTurismo(pool));
 const { crearRouterContenidos } = require('./contenidos.cjs');
@@ -39,6 +45,16 @@ app.use('/api/categorias', crearRouterCategorias(pool));
 // Registro público: no utiliza el token de demostración.
 const { crearRouterRegistro } = require('./registro.cjs');
 app.use('/api', crearRouterRegistro(pool));
+
+// Arranque local: comprueba el servicio sin crear ni renovar sesiones de personas.
+app.get('/api/salud', async (_req, res) => {
+  try {
+    await pool.query('SELECT 1');
+    return res.json({ conectado: true, servicio: 'casablanca-api', version: '2026-11-19' });
+  } catch {
+    return res.status(503).json({ conectado: false, servicio: 'casablanca-api' });
+  }
+});
 
 // Comprueba conexión y acceso administrativo mediante una función autorizada.
 app.get('/api/estado', async (_req, res) => {

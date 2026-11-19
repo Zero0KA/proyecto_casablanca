@@ -1,0 +1,14 @@
+{
+  "fecha": "2026-11-19T05:54:03.694Z",
+  "casos": [
+    "Aplicación completa, respaldo exacto y configuración privada intacta",
+    "Repetición idempotente sin crear otro respaldo",
+    "Archivos de Windows con BOM y CRLF reconocidos",
+    "Cambio local desconocido detiene todo antes del respaldo o reemplazo",
+    "Un archivo nuevo existente no se sobrescribe si tiene contenido desconocido",
+    "Paquete alterado detectado antes de escribir en el proyecto",
+    "Enlaces simbólicos rechazados sin modificar archivos externos",
+    "Fallo a mitad de escritura restaura lo ya reemplazado",
+    "Rutas de escape del manifiesto rechazadas"
+  ]
+}

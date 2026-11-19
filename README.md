@@ -1,9 +1,16 @@
 # Casablanca
 
-Aplicación integrada: React/Vite, Node/Express y PostgreSQL/PostGIS.
+Aplicación turística con React/Vite, API Node/Express y PostgreSQL/PostGIS.
 
-**Actualización del 30/10/2026:** administración de atractivos, rutas y paradas con BD real; carga inicial por acción del administrador; borrado protegido; y Mapas interactivos con el circuito del Casco Histórico en vista ilustrada y geográfica.
+**Actualización del 19/11/2026:** Inicio, atractivos, categorías visibles, rutas y mapas consultan el mismo catálogo de PostgreSQL. La administración conserva el CRUD y permite abrir una vista previa privada. Solo el contenido publicado aparece al visitante; los borradores no se publican automáticamente.
 
-Consulta [LEEME_INTEGRACION.md](LEEME_INTEGRACION.md) para ejecutar el proyecto. Antes de usar los paneles nuevos en la BD existente, sigue [docs/ADMIN_CONTENIDOS.md](docs/ADMIN_CONTENIDOS.md) y ejecuta `bd/actualizar_bd_contenidos.sql`. El instalador completo actualizado se reserva para una base vacía.
+La BD y sus UUID se conservan. Esta actualización no agrega tablas ni funciones SQL y no necesita una migración nueva. Se presupone instalada la ampliación administrativa anterior. El instalador completo continúa reservado para una BD vacía.
 
-El catálogo público de presentación todavía usa datos locales; su unificación completa con BD queda para una etapa posterior. El panel administrativo sí guarda en PostgreSQL. Fuentes y precisión del mapa: [docs/UBICACIONES_CASCO_HISTORICO.md](docs/UBICACIONES_CASCO_HISTORICO.md). Pruebas y resultados: [docs/RESULTADOS_ADMIN_CONTENIDOS.md](docs/RESULTADOS_ADMIN_CONTENIDOS.md).
+- [Ejecución e integración](LEEME_INTEGRACION.md).
+- [Catálogo conectado y aplicación del paquete](docs/CATALOGO_CONECTADO.md).
+- [Administración y reglas de conservación](docs/ADMIN_CONTENIDOS.md).
+- [Mapa e ilustración](docs/MAPA_CASCO_HISTORICO.md).
+- [Ubicaciones y referencias pendientes](docs/UBICACIONES_CASCO_HISTORICO.md).
+- [Pruebas de esta entrega](docs/RESULTADOS_CATALOGO_CONECTADO.md).
+
+Para comprobar el código en Windows: `verificar-proyecto.cmd`. Para trabajar localmente: `iniciar-demo.cmd`. Para compartir desde Pages: guardar y subir primero el código y después ejecutar `iniciar-publicacion.cmd`.

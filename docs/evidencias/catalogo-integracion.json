@@ -1,0 +1,33 @@
+{
+  "fecha": "2026-11-19T05:50:55.798Z",
+  "entorno": {
+    "postgres": "PostgreSQL 17.11 (Debian 17.11-0+deb13u1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit",
+    "postgis": "POSTGIS=\"3.5.2 dea6d0a\" [EXTENSION] PGSQL=\"170\" GEOS=\"3.13.1-CAPI-1.19.2\" PROJ=\"9.6.0 NETWORK_ENABLED=OFF URL_ENDPOINT=https://cdn.proj.org USER_WRITABLE_DIRECTORY=/home/agent/.local/share/proj DATABASE_PATH=/usr/share/proj/proj.db\" (compiled against PROJ 9.5.1) LIBXML=\"2.9.14\" LIBJSON=\"0.18\" LIBPROTOBUF=\"1.5.1\" WAGYU=\"0.5.0 (Internal)\""
+  },
+  "casos": [
+    "Arranque sin token fijo: servicio y conexión comprobados",
+    "Login real con Argon2: sesión personal y rol administrativo conservados",
+    "Conexión inactiva interrumpida: la API permanece activa y vuelve a conectarse",
+    "BD vacía: catálogo público vacío, sin copias locales",
+    "Población opcional: borradores ausentes del catálogo público",
+    "Vista previa: seis atractivos y tres rutas, acceso administrativo verificado por BD",
+    "Un parámetro público no habilita acceso a borradores",
+    "Idioma, parámetros repetidos e identificadores inválidos rechazados sin ejecutar SQL inyectado",
+    "Publicación con requisitos existentes: cinco atractivos, tres rutas, cero duplicados",
+    "Casco desde BD: doce paradas; siete GPS y cinco ausentes, sin aproximaciones sustitutas",
+    "Compatibilidad de endpoints de rutas: misma ficha y paradas actuales",
+    "La ficha de atractivo por UUID consulta el contenido publicado",
+    "Edición de nombre y categoría visible públicamente; SQL malicioso permanece texto literal",
+    "Desactivar categoría la retira del filtro y de sus fichas públicas",
+    "La conexión API conserva privilegios mínimos y no accede a tablas privadas",
+    "Retirar una ruta oculta catálogo y URL directa, conservando el recorrido abierto de la persona",
+    "Nombre y GPS de parada se actualizan en la vista previa sin editar archivos del frontend",
+    "Reordenación visible al publicar; el orden del recorrido anterior permanece intacto",
+    "Lectura consistente: una edición concurrente no mezcla dos versiones en la misma respuesta",
+    "Eliminar ruta sin historial la retira también de los catálogos, sin resucitar la copia local",
+    "El catálogo público no incluye cuentas, hashes ni secretos de sesión",
+    "Lectura inglesa existente sin simular traducción integral de la interfaz",
+    "Modo público: catálogo por origen permitido, vista previa por Bearer admin y denegación de turista/origen ajeno",
+    "Las consultas y cambios preservan las cuentas, sesiones y el historial creado en la prueba"
+  ]
+}
